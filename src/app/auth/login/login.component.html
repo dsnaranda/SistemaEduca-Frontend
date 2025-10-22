@@ -1,3 +1,79 @@
-<h1 class="text-4xl font-bold text-blue-600 text-center mt-8">
-  Tailwind funcionando 🎉
-</h1>
+<div class="flex justify-center items-center min-h-screen bg-gray-50">
+  <div class="w-full max-w-sm bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-8">
+    <h1 class="text-2xl font-bold text-gray-700 mb-2">SistemaPGA</h1>
+
+    <h2 class="mt-4 text-xl font-semibold text-gray-900">Inicia sesión</h2>
+ 
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-6 space-y-5">
+      <!-- Correo -->
+      <div>
+        <label for="correo" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M1.5 1H16.5C17.33 1 18 1.67 18 2.5V11.5C18 12.33 17.33 13 16.5 13H1.5C0.67 13 0 12.33 0 11.5V2.5C0 1.67 0.67 1 1.5 1ZM1.72 2L9 7.09L16.28 2H1.72ZM1 3.11V11.5C1 11.78 1.22 12 1.5 12H16.5C16.78 12 17 11.78 17 11.5V3.11L9.47 8.47C9.18 8.67 8.82 8.67 8.53 8.47L1 3.11Z"
+                fill="#6B7280" />
+            </svg>
+          </span>
+          <input
+            formControlName="correo"
+            id="correo"
+            type="email"
+            placeholder="Ej. usuario@correo.com"
+            class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 placeholder-gray-400"
+          />
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12.5 7V4.5C12.5 2.01 10.49 0 8 0C5.51 0 3.5 2.01 3.5 4.5V7C2.12 7 1 8.12 1 9.5V16.5C1 17.33 1.67 18 2.5 18H13.5C14.33 18 15 17.33 15 16.5V9.5C15 8.12 13.88 7 12.5 7ZM4.5 4.5C4.5 2.57 6.07 1 8 1C9.93 1 11.5 2.57 11.5 4.5V7H4.5V4.5ZM14 16.5C14 16.78 13.78 17 13.5 17H2.5C2.22 17 2 16.78 2 16.5V9.5C2 8.67 2.67 8 3.5 8H12.5C13.33 8 14 8.67 14 9.5V16.5ZM8 12C7.45 12 7 12.45 7 13V14C7 14.55 7.45 15 8 15C8.55 15 9 14.55 9 14V13C9 12.45 8.55 12 8 12Z"
+                fill="#6B7280" />
+            </svg>
+          </span>
+
+          <input
+            formControlName="password"
+            id="password"
+            [attr.type]="isPasswordVisible ? 'text' : 'password'"
+            placeholder="Ingrese su contraseña"
+            class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 placeholder-gray-400"
+          />
+
+          <!-- Botón para mostrar/ocultar -->
+          <button type="button" (click)="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
+            <svg *ngIf="!isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 15.923 7.11 19 12 19c4.889 0 8.774-3.077 10.066-7a10.48 10.48 0 00-2.046-3.777M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
+            </svg>
+            <svg *ngIf="isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Enlace recuperar -->
+      <div class="text-right">
+        <a routerLink="/login" class="text-xs text-gray-600 hover:underline">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <!-- Botón -->
+      <button
+        type="submit"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-full shadow-sm transition-colors"
+      >
+        Iniciar sesión
+      </button>
+    </form>
+  </div>
+</div>
