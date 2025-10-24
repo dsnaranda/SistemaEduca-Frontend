@@ -9,10 +9,14 @@ import { AddestudiantesComponent } from './pages/addestudiantes/addestudiantes.c
 import { AsistenciaComponent } from './pages/asistencia/asistencia.component';
 import { RegistrarAsistenciaComponent } from './pages/registrar-asistencia/registrar-asistencia.component';
 import { CursosasignadosComponent } from './pages/shared/cursosasignados/cursosasignados.component';
+import { LosspassComponent } from './auth/losspass/losspass.component';
+import { ChangepassComponent } from './auth/changepass/changepass.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
     { path: 'login', component: LoginComponent },
+    { path: 'losspassword', component: LosspassComponent },
+    { path: 'changepassword/:id', component: ChangepassComponent },
     { path: 'home', component: HomeComponent, canActivate: [authGuard] },
     { path: 'perfil', component: PerfilComponent, canActivate: [authGuard] },
     { path: 'addcursos', component: AddcursosComponent, canActivate: [authGuard] },

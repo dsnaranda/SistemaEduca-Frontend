@@ -20,4 +20,14 @@ export class LoginService {
     const body = { email, password };
     return this.http.post<any>(url, body);
   }
+
+  verificarCorreo(email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/usuarios/verificar-correo`, { email });
+  }
+
+  cambiarContrasena(id: string, password: string): Observable<any> {
+    const url = `${this.baseUrl}/usuarios/cambiar-contrasena/${id}`;
+    return this.http.put<any>(url, { password });
+  }
+
 }

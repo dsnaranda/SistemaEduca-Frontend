@@ -1,9 +1,9 @@
 <div class="flex justify-center items-center min-h-screen bg-gray-50">
   <div class="w-full max-w-sm bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-8">
-    <h1 class="text-2xl font-bold text-gray-700 mb-2">SistemaPGA</h1>
+    <h1 class="text-2xl font-extrabold text-indigo-700 mb-8 text-center">SistemaPGA</h1>
 
     <h2 class="mt-4 text-xl font-semibold text-gray-900">Inicia sesión</h2>
- 
+
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="mt-6 space-y-5">
       <!-- Correo -->
       <div>
@@ -16,13 +16,8 @@
                 fill="#6B7280" />
             </svg>
           </span>
-          <input
-            formControlName="correo"
-            id="correo"
-            type="email"
-            placeholder="Ej. usuario@correo.com"
-            class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 placeholder-gray-400"
-          />
+          <input formControlName="correo" id="correo" type="email" placeholder="Ej. usuario@correo.com"
+            class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 placeholder-gray-400" />
         </div>
       </div>
 
@@ -38,22 +33,21 @@
             </svg>
           </span>
 
-          <input
-            formControlName="password"
-            id="password"
-            [attr.type]="isPasswordVisible ? 'text' : 'password'"
+          <input formControlName="password" id="password" [attr.type]="isPasswordVisible ? 'text' : 'password'"
             placeholder="Ingrese su contraseña"
-            class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 placeholder-gray-400"
-          />
+            class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 placeholder-gray-400" />
 
           <!-- Botón para mostrar/ocultar -->
-          <button type="button" (click)="togglePasswordVisibility()" class="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
-            <svg *ngIf="!isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <button type="button" (click)="togglePasswordVisibility()"
+            class="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
+            <svg *ngIf="!isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 15.923 7.11 19 12 19c4.889 0 8.774-3.077 10.066-7a10.48 10.48 0 00-2.046-3.777M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
             </svg>
-            <svg *ngIf="isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <svg *ngIf="isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M2.458 12C3.732 7.943 7.522 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.478 0-8.268-2.943-9.542-7z" />
               <circle cx="12" cy="12" r="3" />
@@ -64,14 +58,12 @@
 
       <!-- Enlace recuperar -->
       <div class="text-right">
-        <a routerLink="/login" class="text-xs text-gray-600 hover:underline">¿Olvidaste tu contraseña?</a>
+        <a routerLink="/losspassword" class="text-xs text-gray-600 hover:underline">¿Olvidaste tu contraseña?</a>
       </div>
 
       <!-- Botón -->
-      <button
-        type="submit"
-        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-full shadow-sm transition-colors"
-      >
+      <button type="submit"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-full shadow-sm transition-colors">
         Iniciar sesión
       </button>
     </form>
