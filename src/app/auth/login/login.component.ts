@@ -12,10 +12,11 @@ import Swal from 'sweetalert2';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   isPasswordVisible: boolean = false;
+
+  constructor(private fb: FormBuilder, private router: Router, private loginService: LoginService) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -33,75 +34,55 @@ export class LoginComponent implements OnInit {
         text: 'Estamos procesando tu solicitud',
         icon: 'info',
         allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
+        didOpen: () => Swal.showLoading(),
       });
 
       this.loginService.login(correo, password).subscribe({
         next: (response) => {
           Swal.close();
-          if (response && response.usuario) {
-            console.log('Usuario autenticado:', response.usuario);
+
+          if (response && response.usuario && response.token) {
+            // ✅ Guardar el token y el usuario en localStorage
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('usuario', JSON.stringify(response.usuario));
+
             Swal.fire({
               title: '¡Bienvenido!',
-              text: 'Has iniciado sesión correctamente.',
+              text: `Hola ${response.usuario.nombres}`,
               icon: 'success',
-              confirmButtonText: 'Aceptar'
+              confirmButtonText: 'Continuar'
+            }).then(() => {
+              this.router.navigate(['/home']);
             });
-            this.router.navigate(['/home']);
           } else {
-            // El usuario no fue encontrado
-            console.log('Error: Usuario no encontrado');
             Swal.fire({
               title: 'Error',
-              text: response?.error || 'No se encontró el usuario, por favor revisa tus credenciales.',
-              icon: 'error',
-              confirmButtonText: 'Aceptar'
+              text: 'No se recibió respuesta válida del servidor.',
+              icon: 'error'
             });
           }
         },
         error: (err) => {
           Swal.close();
-          if (err?.error?.error === 'El correo no está registrado') {
-            Swal.fire({
-              title: 'Error',
-              text: 'El correo no está registrado.',
-              icon: 'error',
-              confirmButtonText: 'Aceptar'
-            });
-          } else if (err?.error?.error === 'Contraseña incorrecta') {
-            //  incorrecta
-            Swal.fire({
-              title: 'Error',
-              text: 'La contraseña es incorrecta.',
-              icon: 'error',
-              confirmButtonText: 'Aceptar'
-            });
-          } else {
-            // fallo interno
-            Swal.fire({
-              title: 'Error',
-              text: 'Hubo un problema al iniciar sesión, por favor intenta nuevamente.',
-              icon: 'error',
-              confirmButtonText: 'Aceptar'
-            });
-          }
+
+          const errorMsg = err?.error?.error || 'Hubo un problema al iniciar sesión.';
+
+          Swal.fire({
+            title: 'Error',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+          });
         }
       });
     } else {
-      console.log('Formulario no válido');
       Swal.fire({
         title: 'Formulario inválido',
         text: 'Por favor, completa todos los campos correctamente.',
-        icon: 'warning',
-        confirmButtonText: 'Aceptar'
+        icon: 'warning'
       });
     }
   }
-
-
-  constructor(private fb: FormBuilder, private router: Router, private loginService: LoginService) { }
 
   togglePasswordVisibility(): void {
     this.isPasswordVisible = !this.isPasswordVisible;

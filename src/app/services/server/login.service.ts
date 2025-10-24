@@ -7,8 +7,11 @@ import { Observable } from 'rxjs';
 })
 export class LoginService {
 
-  private readonly baseUrl = 'https://api-sistema-escolar.vercel.app';
-  //private readonly baseUrl = 'http://localhost:3001';
+  private readonly useLocal = false;
+  private readonly baseUrl = this.useLocal
+    ? 'http://localhost:3001'
+    : 'https://api-sistema-escolar.vercel.app';
+
 
   constructor(private http: HttpClient) { }
 

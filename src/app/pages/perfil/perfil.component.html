@@ -1,1 +1,45 @@
-<p>perfil works!</p>
+<app-navbar></app-navbar>
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Perfil del Usuario</h2>
+
+    <div *ngIf="usuario; else noData">
+      <div class="mb-4">
+        <p class="text-sm text-gray-500">ID:</p>
+        <p class="text-base font-semibold text-gray-700 break-all">{{ usuario.id }}</p>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-sm text-gray-500">Nombre completo:</p>
+        <p class="text-base font-semibold text-gray-700">
+          {{ usuario.nombres }} {{ usuario.apellidos }}
+        </p>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-sm text-gray-500">Correo:</p>
+        <p class="text-base font-semibold text-gray-700">{{ usuario.email }}</p>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-sm text-gray-500">Rol:</p>
+        <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full font-medium">
+          {{ usuario.rol | titlecase }}
+        </span>
+      </div>
+
+      <div class="text-center mt-8">
+        <button
+          (click)="goHome()"
+          class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md transition"
+        >
+          Volver al inicio
+        </button>
+      </div>
+    </div>
+
+    <ng-template #noData>
+      <p class="text-center text-gray-600">No hay datos del usuario autenticado.</p>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<h3 class="text-xl font-semibold text-gray-800 mb-8 text-center">
+  {{ contexto === 'home' ? 'Mis cursos asignados' : 'Selecciona un curso para registrar asistencia' }}
+</h3>
+
+<div
+  *ngIf="cursos.length > 0; else noCursos"
+  class="grid gap-8"
+  style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));"
+>
+  <div
+    *ngFor="let curso of cursos"
+    (click)="abrirCurso(curso.id)"
+    class="cursor-pointer border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all flex flex-col justify-between"
+    [ngClass]="{
+      'hover:bg-indigo-50': contexto === 'home',
+      'hover:bg-green-50': contexto === 'asistencia'
+    }"
+  >
+    <p class="text-xl font-semibold text-gray-800 mb-3 text-center">
+      {{ curso.nombre }} - {{ curso.nivel }}°{{ curso.paralelo }}
+    </p>
+
+    <div class="text-sm text-gray-600 space-y-2 text-center">
+      <p>👨‍🎓 Estudiantes: {{ curso.total_estudiantes }}</p>
+      <p>📘 Materias: {{ curso.total_materias }}</p>
+    </div>
+  </div>
+</div>
