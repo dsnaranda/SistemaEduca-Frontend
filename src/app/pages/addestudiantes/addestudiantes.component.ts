@@ -92,10 +92,17 @@ export class AddestudiantesComponent implements OnInit {
   onInputChange(estudiante: AbstractControl, campo: string): void {
     const grupo = estudiante as FormGroup;
     const control = grupo.get(campo);
-    if (control && control.value !== '') {
-      control.markAsTouched();
+    if (control) {
+      control.markAsDirty();
+      if (control.hasError('duplicado')) {
+        const currentErrors = { ...control.errors };
+        delete currentErrors['duplicado'];
+        control.setErrors(Object.keys(currentErrors).length ? currentErrors : null);
+        control.updateValueAndValidity({ onlySelf: true });
+      }
     }
   }
+
 
   agregarFila(): void {
     this.estudiantes.push(this.crearEstudiante());
@@ -163,39 +170,94 @@ export class AddestudiantesComponent implements OnInit {
       didOpen: () => Swal.showLoading()
     });
 
-    this.cursosService.addEstudiantes(this.cursoId, estudiantes)
-      .pipe(finalize(() => Swal.close()))
-      .subscribe({
-        next: (res) => {
-          Swal.fire({
-            icon: 'success',
-            title: 'Éxito',
-            text: res.mensaje || 'Estudiantes añadidos correctamente.',
-            confirmButtonText: 'Aceptar'
-          }).then(() => {
-            this.estudiantesForm.reset();
-            this.estudiantes.clear();
-            this.estudiantes.push(this.crearEstudiante());
+    this.cursosService.addEstudiantes(this.cursoId, estudiantes).subscribe({
+      next: (res) => {
+        Swal.close();
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: res.mensaje || 'Estudiantes añadidos correctamente.',
+          confirmButtonText: 'Aceptar'
+        }).then(() => {
+          this.estudiantesForm.reset();
+          this.estudiantes.clear();
+          this.estudiantes.push(this.crearEstudiante());
 
-            // Mostrar loader breve mientras recargamos
-            this.ready = false;
-            Swal.fire({
-              title: 'Actualizando lista...',
-              allowOutsideClick: false,
-              showConfirmButton: false,
-              didOpen: () => Swal.showLoading()
-            });
-            this.cargarEstudiantes();
-          });
-        },
-        error: (err) => {
+          // Mostrar loader breve mientras recargamos
+          this.ready = false;
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: err.error?.error || 'No se pudieron guardar los estudiantes.',
-            confirmButtonText: 'Aceptar'
+            title: 'Actualizando lista...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading()
+          });
+          this.cargarEstudiantes();
+        });
+      },
+
+      error: (err) => {
+        Swal.close();
+
+        // Detectar mensaje de error real
+        const msg =
+          err.error?.error ||
+          err.error?.message ||
+          err.error?.msg ||
+          'No se pudieron guardar los estudiantes.';
+
+        // Formatear para el swal
+        const htmlMsg = msg.replace(/\n/g, '<br>').replace(/•/g, '<br>•');
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al guardar estudiantes',
+          html: htmlMsg,
+          confirmButtonText: 'Aceptar'
+        });
+
+        // Buscar duplicados si existen
+        // Buscar duplicados si existen
+        if (msg.includes('registrados')) {
+          const regexCorreo = /\(([^)]+@[^)]+)\)/g;
+          const regexCi = /\(CI:\s*([0-9]{10})/g;
+
+          const correosDuplicados = Array.from(
+            msg.matchAll(regexCorreo) as IterableIterator<RegExpMatchArray>,
+            (m: RegExpMatchArray) => m[1]
+          );
+
+          const ciDuplicados = Array.from(
+            msg.matchAll(regexCi) as IterableIterator<RegExpMatchArray>,
+            (m: RegExpMatchArray) => m[1]
+          );
+
+          // Marcar campos duplicados en el formulario
+          this.estudiantes.controls.forEach((ctrl) => {
+            const grupo = ctrl as FormGroup;
+            const ciCtrl = grupo.get('ci');
+            const emailCtrl = grupo.get('email');
+            const ci = ciCtrl?.value;
+            const email = emailCtrl?.value;
+
+            // Si la cédula está duplicada
+            if (ciDuplicados.includes(ci)) {
+              ciCtrl?.setErrors({ ...(ciCtrl.errors || {}), duplicado: true });
+              ciCtrl?.markAsDirty();
+              ciCtrl?.updateValueAndValidity();
+            }
+
+            // Si el correo está duplicado
+            if (correosDuplicados.includes(email)) {
+              emailCtrl?.setErrors({ ...(emailCtrl.errors || {}), duplicado: true });
+              emailCtrl?.markAsDirty();
+              emailCtrl?.updateValueAndValidity();
+            }
           });
         }
-      });
+
+      }
+    });
   }
+
+
 }

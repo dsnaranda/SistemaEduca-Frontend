@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -28,6 +28,15 @@ export class LoginService {
   cambiarContrasena(id: string, password: string): Observable<any> {
     const url = `${this.baseUrl}/usuarios/cambiar-contrasena/${id}`;
     return this.http.put<any>(url, { password });
+  }
+
+  obtenerDocentes(): Observable<any[]> {
+    const url = `${this.baseUrl}/usuarios/list`;
+    return this.http.get<any[]>(url).pipe(
+      map((usuarios: any[]) =>
+        usuarios.filter((u: any) => u.rol === 'docente')
+      )
+    );
   }
 
 }

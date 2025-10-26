@@ -46,10 +46,13 @@
                         <input type="text" formControlName="ci" placeholder="Cédula" maxlength="10"
                             class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                             [ngClass]="{
-      'border-red-500 ring-2 ring-red-300':
-        estudiante.get('ci')?.invalid && estudiante.get('ci')?.touched
+      'border-red-500 ring-1 ring-red-300':
+        estudiante.get('ci')?.errors?.['duplicado'] ||
+        (estudiante.get('ci')?.invalid && estudiante.get('ci')?.touched)
     }" (input)="onInputChange(estudiante, 'ci')" />
+
                     </div>
+
 
                     <!-- CORREO -->
                     <div class="col-span-3">
@@ -57,18 +60,22 @@
                         <input type="email" formControlName="email" placeholder="Correo electrónico"
                             class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                             [ngClass]="{
-      'border-red-500 ring-2 ring-red-300':
-        estudiante.get('email')?.invalid && estudiante.get('email')?.touched
+      'border-red-500 ring-1 ring-red-300':
+        estudiante.get('email')?.errors?.['duplicado'] ||
+        (estudiante.get('email')?.invalid && estudiante.get('email')?.touched)
     }" (input)="onInputChange(estudiante, 'email')" />
+
                     </div>
 
 
-                    <div class="col-span-1 flex items-end justify-center">
+                    <!-- Botón eliminar -->
+                    <div class="col-span-1 flex items-center justify-center mt-6">
                         <button type="button" (click)="eliminarFila(i)"
                             class="text-red-600 hover:text-red-700 font-semibold" [disabled]="estudiantes.length === 1">
                             Eliminar
                         </button>
                     </div>
+
                 </div>
             </div>
 

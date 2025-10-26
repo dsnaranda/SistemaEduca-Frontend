@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LoginService } from '../../services/server/login.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
@@ -19,12 +20,15 @@ export class AddcursosComponent implements OnInit {
   cursoForm!: FormGroup;
   docenteId: string = '';
   cursos: any[] = [];
+  docentes: any[] = [];
   ready = false;
+  docenteNombre: string = '';
 
   constructor(
     private fb: FormBuilder,
     private cursosService: CursosService,
-    private router: Router
+    private router: Router,
+    private loginService: LoginService
   ) { }
 
   ngOnInit(): void {
@@ -34,28 +38,41 @@ export class AddcursosComponent implements OnInit {
       this.docenteId = usuario.id;
     }
 
+    // Inicializamos el formulario correctamente
     this.cursoForm = this.fb.group({
       nombre: ['', Validators.required],
       nivel: ['', Validators.required],
-      paralelo: ['', Validators.required]
+      paralelo: ['', Validators.required],
+      docente_id: [''] // Valor inicial vacío
     });
 
-    // Mostrar loader inicial antes de cargar cursos
+    // Mostrar loader antes de cargar docentes y cursos
     Swal.fire({
-      title: 'Cargando cursos...',
+      title: 'Cargando información...',
       allowOutsideClick: false,
       showConfirmButton: false,
       didOpen: () => Swal.showLoading()
     });
 
-    this.cargarCursos();
+    // Primero cargamos docentes
+    this.loginService.obtenerDocentes().subscribe({
+      next: (docentes) => {
+        this.docentes = docentes || [];
+        this.cargarCursos(); // Luego cargamos cursos
+      },
+      error: (err) => {
+        Swal.fire('Error', 'No se pudieron cargar los docentes.', 'error');
+        console.error('Error al obtener docentes:', err);
+        Swal.close();
+      }
+    });
   }
+
 
   cargarCursos(): void {
     this.cursosService.getCursosPorDocente(this.docenteId)
       .pipe(
         finalize(() => {
-          // Siempre cerrar loader y mostrar contenido
           Swal.close();
           this.ready = true;
         })
@@ -63,6 +80,14 @@ export class AddcursosComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.cursos = res.cursos || [];
+
+          // 🔹 Extraer el nombre del docente desde el mensaje
+          if (res.mensaje) {
+            const match = res.mensaje.match(/docente\s(.+)/i);
+            this.docenteNombre = match ? match[1] : ''; // "Cesar Aguacondo"
+          } else {
+            this.docenteNombre = '';
+          }
         },
         error: (err) => {
           Swal.fire('Error', 'No se pudieron cargar los cursos.', 'error');
@@ -72,13 +97,9 @@ export class AddcursosComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.cursoForm.valid && this.docenteId) {
-      const data = {
-        ...this.cursoForm.value,
-        docente_id: this.docenteId
-      };
+    if (this.cursoForm.valid) {
+      const data = this.cursoForm.value;
 
-      // Loader mientras se guarda el nuevo curso
       Swal.fire({
         title: 'Guardando curso...',
         text: 'Por favor espera un momento',
@@ -87,6 +108,7 @@ export class AddcursosComponent implements OnInit {
         didOpen: () => Swal.showLoading()
       });
 
+      // Llamamos al servicio usando el docente seleccionado
       this.cursosService.addCurso(data)
         .pipe(finalize(() => Swal.close()))
         .subscribe({
@@ -97,10 +119,17 @@ export class AddcursosComponent implements OnInit {
               text: res.mensaje || 'El curso ha sido registrado exitosamente.',
               confirmButtonText: 'Aceptar'
             }).then(() => {
-              this.cursoForm.reset();
+              // Reset completo del formulario (incluye el combo)
+              this.cursoForm.reset({
+                nombre: '',
+                nivel: '',
+                paralelo: '',
+                docente_id: ''
+              });
+
               this.ready = false;
 
-              // Mostrar loader mientras recargamos cursos
+              // Loader mientras recargamos cursos
               Swal.fire({
                 title: 'Actualizando lista...',
                 allowOutsideClick: false,
@@ -129,6 +158,7 @@ export class AddcursosComponent implements OnInit {
       });
     }
   }
+
 
   irAEstudiantes(cursoId: string): void {
     this.router.navigate(['/cursos', cursoId, 'estudiantes']);
