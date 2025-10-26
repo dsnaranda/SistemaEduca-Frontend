@@ -71,7 +71,7 @@ export class AddestudiantesComponent implements OnInit {
       apellidos: ['', Validators.required],
       ci: ['', [Validators.required, Validators.minLength(10)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['123']
+      password: ['automatica']
     });
   }
 

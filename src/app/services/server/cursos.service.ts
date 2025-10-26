@@ -46,7 +46,7 @@ export class CursosService {
     return this.http.get<any>(url);
   }
 
-    registrarAsistencia(data: any): Observable<any> {
+  registrarAsistencia(data: any): Observable<any> {
     const url = `${this.baseUrl}/asistencia/registrar`;
     return this.http.post<any>(url, data);
   }
