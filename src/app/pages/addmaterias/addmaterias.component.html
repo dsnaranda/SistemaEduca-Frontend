@@ -1,6 +1,6 @@
-<app-navbar></app-navbar>
+<app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
 
-<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-10 px-4">
+<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-10 px-4 mt-4">
   <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-5xl">
     <!-- Título del curso -->
     <div class="text-center mb-6">
@@ -15,8 +15,34 @@
       </p>
     </div>
 
+    <!-- Barra superior (combo + botones) -->
+    <div class="flex justify-between mt-4 mb-4">
+      <div class="flex items-center gap-3">
+        <!-- Combo box de materias predefinidas -->
+        <select id="materiaBase"
+          class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          (change)="onMateriaSeleccionada($event)">
+          <option value="">-- Selecciona materia básica --</option>
+          <option *ngFor="let materia of materiasBasicas" [value]="materia.nombre">
+            {{ materia.nombre }}
+          </option>
+        </select>
+
+        <button type="button" (click)="agregarFila()"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+          Añadir fila
+        </button>
+      </div>
+
+      <!-- 🔧 Botón fuera del form pero asociado por id -->
+      <button type="submit" form="materiasForm"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition">
+        Guardar materias
+      </button>
+    </div>
+
     <!-- Formulario -->
-    <form [formGroup]="materiasForm" (ngSubmit)="onSubmit()" class="space-y-4">
+    <form [formGroup]="materiasForm" (ngSubmit)="onSubmit()" id="materiasForm" class="space-y-4">
       <div formArrayName="materias">
         <div *ngFor="let materia of materias.controls; let i = index" [formGroupName]="i"
           class="grid grid-cols-12 gap-4 items-center mb-3 border-b pb-3">
@@ -33,50 +59,48 @@
           </div>
 
           <div class="col-span-2 flex items-end justify-center">
-            <button type="button" (click)="eliminarFila(i)"
-              class="text-red-600 hover:text-red-700 font-semibold" [disabled]="materias.length === 1">
+            <button type="button" (click)="eliminarFila(i)" class="text-red-600 hover:text-red-700 font-semibold"
+              [disabled]="materias.length === 1">
               Eliminar
             </button>
           </div>
         </div>
       </div>
-
-      <div class="flex justify-between mt-4">
-        <button type="button" (click)="agregarFila()"
-          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
-          Añadir fila
-        </button>
-
-        <button type="submit"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition">
-          Guardar materias
-        </button>
-      </div>
     </form>
 
-    <!-- Tabla de materias -->
-    <div class="mt-10">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">Materias registradas</h3>
+    <!-- Tabla de materias (sin cambios) -->
+    <div class="mt-4">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">
+        Materias registradas
+      </h3>
 
-      <table class="w-full border-collapse border border-gray-200 text-sm text-left">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="border p-2">#</th>
-            <th class="border p-2">Nombre</th>
-            <th class="border p-2">Descripción</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let m of materiasLista; let i = index" class="hover:bg-gray-50">
-            <td class="border p-2">{{ i + 1 }}</td>
-            <td class="border p-2">{{ m.nombre }}</td>
-            <td class="border p-2">{{ m.descripcion }}</td>
-          </tr>
-          <tr *ngIf="materiasLista.length === 0">
-            <td colspan="3" class="text-center text-gray-500 p-4">No hay materias registradas.</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-x-auto rounded-2xl shadow-md border border-gray-200">
+        <table class="min-w-full border-collapse">
+          <thead class="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-sm uppercase tracking-wide">
+            <tr>
+              <th class="p-3 text-left w-12">#</th>
+              <th class="p-3 text-left">Nombre</th>
+              <th class="p-3 text-left">Descripción</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-gray-100 bg-white text-gray-700">
+            <tr *ngFor="let m of materiasLista; let i = index"
+              class="hover:bg-indigo-50/70 transition-all duration-150 ease-in-out">
+              <td class="p-3 font-medium text-gray-600">{{ i + 1 }}</td>
+              <td class="p-3">{{ m.nombre }}</td>
+              <td class="p-3 text-gray-600">{{ m.descripcion }}</td>
+            </tr>
+
+            <tr *ngIf="materiasLista.length === 0">
+              <td colspan="3" class="text-center text-gray-500 p-4 italic">
+                No hay materias registradas.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
   </div>
 </div>

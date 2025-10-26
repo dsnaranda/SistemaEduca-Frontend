@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CursosService } from '../../services/server/cursos.service';
 import Swal from 'sweetalert2';
@@ -26,7 +26,7 @@ export class AddestudiantesComponent implements OnInit {
     private route: ActivatedRoute,
     private cursosService: CursosService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((pm) => {
@@ -69,10 +69,32 @@ export class AddestudiantesComponent implements OnInit {
     return this.fb.group({
       nombres: ['', Validators.required],
       apellidos: ['', Validators.required],
-      ci: ['', [Validators.required, Validators.minLength(10)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['automatica']
+      ci: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[0-9]+$/),
+          Validators.minLength(10),
+          Validators.maxLength(10),
+        ],
+      ],
+      email: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+        ],
+      ],
+      password: ['automatica'],
     });
+  }
+
+  onInputChange(estudiante: AbstractControl, campo: string): void {
+    const grupo = estudiante as FormGroup;
+    const control = grupo.get(campo);
+    if (control && control.value !== '') {
+      control.markAsTouched();
+    }
   }
 
   agregarFila(): void {

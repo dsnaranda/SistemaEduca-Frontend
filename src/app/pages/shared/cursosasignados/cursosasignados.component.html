@@ -27,12 +27,24 @@
 <ng-template #noCursos>
   <div class="flex justify-center items-center">
     <div class="border border-gray-200 bg-white rounded-2xl shadow-md p-8 max-w-md text-center">
-      <p class="text-2xl font-semibold text-gray-700 mb-2">No tienes cursos asignados</p>
-      <p class="text-gray-500 text-sm">
-        Aún no se han registrado cursos en tu cuenta.<br>
-        Contacta con el administrador o crea uno nuevo.
+      <!-- Texto dinámico según rol -->
+      <p class="text-2xl font-semibold text-gray-700 mb-2">
+        {{ usuario?.rol === 'docente' ? 'No tienes cursos asignados' : 'No estás inscrito en ningún curso' }}
       </p>
-      <button *ngIf="contexto === 'home'" routerLink="/addcursos"
+
+      <p class="text-gray-500 text-sm">
+        <ng-container *ngIf="usuario?.rol === 'docente'; else mensajeEstudiante">
+          Aún no se han registrado cursos en tu cuenta.<br>
+          Puedes crear uno nuevo para asignar materias y estudiantes.
+        </ng-container>
+        <ng-template #mensajeEstudiante>
+          Aún no estás inscrito en ningún curso.<br>
+          Contacta a tu docente o administrador para recibir una asignación.
+        </ng-template>
+      </p>
+
+      <!-- Botón solo visible si el usuario es docente -->
+      <button *ngIf="usuario?.rol === 'docente' && contexto === 'home'" (click)="goCusos()"
         class="mt-5 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
         ➕ Crear nuevo curso
       </button>

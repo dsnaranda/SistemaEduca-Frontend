@@ -51,4 +51,9 @@ export class CursosService {
     return this.http.post<any>(url, data);
   }
 
+  getCursosPorEstudiante(estudianteId: string): Observable<any> {
+  const url = `${this.baseUrl}/cursos/estudiante/${estudianteId}`;
+  return this.http.get<any>(url);
+}
+
 }

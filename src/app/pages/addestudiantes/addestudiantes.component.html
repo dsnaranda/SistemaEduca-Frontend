@@ -1,6 +1,6 @@
-<app-navbar></app-navbar>
+<app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
 
-<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-10 px-4">
+<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-10 px-4 mt-4">
     <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-5xl">
         <div class="text-center mb-6">
             <h2 class="text-xl font-bold text-gray-800 mb-2">Añadir estudiantes</h2>
@@ -14,6 +14,17 @@
 
         <!-- Formulario -->
         <form [formGroup]="estudiantesForm" (ngSubmit)="onSubmit()" class="space-y-4">
+            <div class="flex justify-between mt-4">
+                <button type="button" (click)="agregarFila()"
+                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
+                    Añadir fila
+                </button>
+
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition">
+                    Guardar estudiantes
+                </button>
+            </div>
             <div formArrayName="estudiantes">
                 <div *ngFor="let estudiante of estudiantes.controls; let i = index" [formGroupName]="i"
                     class="grid grid-cols-12 gap-4 items-center mb-3 border-b pb-3">
@@ -29,17 +40,28 @@
                             class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
                     </div>
 
+                    <!-- CÉDULA -->
                     <div class="col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-1">CI</label>
                         <input type="text" formControlName="ci" placeholder="Cédula" maxlength="10"
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            [ngClass]="{
+      'border-red-500 ring-2 ring-red-300':
+        estudiante.get('ci')?.invalid && estudiante.get('ci')?.touched
+    }" (input)="onInputChange(estudiante, 'ci')" />
                     </div>
 
+                    <!-- CORREO -->
                     <div class="col-span-3">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Correo</label>
                         <input type="email" formControlName="email" placeholder="Correo electrónico"
-                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+                            class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            [ngClass]="{
+      'border-red-500 ring-2 ring-red-300':
+        estudiante.get('email')?.invalid && estudiante.get('email')?.touched
+    }" (input)="onInputChange(estudiante, 'email')" />
                     </div>
+
 
                     <div class="col-span-1 flex items-end justify-center">
                         <button type="button" (click)="eliminarFila(i)"
@@ -50,49 +72,46 @@
                 </div>
             </div>
 
-            <div class="flex justify-between mt-4">
-                <button type="button" (click)="agregarFila()"
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition">
-                    + Añadir fila
-                </button>
 
-                <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition">
-                    Guardar estudiantes
-                </button>
-            </div>
         </form>
 
         <!-- Tabla de estudiantes -->
         <div class="mt-10">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Estudiantes registrados</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">
+                Estudiantes registrados
+            </h3>
 
-            <table class="w-full border-collapse border border-gray-200 text-sm text-left">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border p-2">#</th>
-                        <th class="border p-2">Nombres</th>
-                        <th class="border p-2">Apellidos</th>
-                        <th class="border p-2">Cédula</th>
-                        <th class="border p-2">Correo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let e of estudiantesLista; let i = index" class="hover:bg-gray-50">
-                        <td class="border p-2">{{ i + 1 }}</td>
-                        <td class="border p-2">{{ e.nombres }}</td>
-                        <td class="border p-2">{{ e.apellidos }}</td>
-                        <td class="border p-2">{{ e.ci }}</td>
-                        <td class="border p-2">{{ e.email }}</td>
-                    </tr>
+            <div class="overflow-x-auto rounded-2xl shadow-md border border-gray-200">
+                <table class="min-w-full border-collapse">
+                    <thead
+                        class="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-sm uppercase tracking-wide">
+                        <tr>
+                            <th class="p-3 text-left w-12">#</th>
+                            <th class="p-3 text-left">Apellidos</th>
+                            <th class="p-3 text-left">Nombres</th>
+                            <th class="p-3 text-left">Cédula</th>
+                            <th class="p-3 text-left">Correo</th>
+                        </tr>
+                    </thead>
 
-                    <tr *ngIf="estudiantesLista.length === 0">
-                        <td colspan="5" class="text-center text-gray-500 p-4">
-                            No hay estudiantes registrados.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                    <tbody class="divide-y divide-gray-100 bg-white text-gray-700">
+                        <tr *ngFor="let e of estudiantesLista; let i = index"
+                            class="hover:bg-indigo-50/70 transition-all duration-150 ease-in-out">
+                            <td class="p-3 font-medium text-gray-600">{{ i + 1 }}</td>
+                            <td class="p-3">{{ e.apellidos }}</td>
+                            <td class="p-3">{{ e.nombres }}</td>
+                            <td class="p-3 text-gray-600">{{ e.ci }}</td>
+                            <td class="p-3 text-sm text-gray-500">{{ e.email }}</td>
+                        </tr>
+
+                        <tr *ngIf="estudiantesLista.length === 0">
+                            <td colspan="5" class="text-center text-gray-500 p-4 italic">
+                                No hay estudiantes registrados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
-</div>

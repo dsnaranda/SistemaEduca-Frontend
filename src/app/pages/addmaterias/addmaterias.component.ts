@@ -19,14 +19,21 @@ export class AddmateriasComponent implements OnInit {
   cursoSeleccionado: any = null;
   materiasForm!: FormGroup;
   materiasLista: any[] = [];
-  ready = false; 
+  ready = false;
+  materiasBasicas = [
+    { nombre: 'Matemáticas', descripcion: 'Desarrollo del pensamiento lógico y resolución de problemas.' },
+    { nombre: 'Ciencias Naturales', descripcion: 'Exploración del entorno natural y fenómenos científicos.' },
+    { nombre: 'Ciencias Sociales', descripcion: 'Conocimiento de la sociedad, historia y cultura.' },
+    { nombre: 'Lengua y Literatura', descripcion: 'Lectura, escritura y comprensión del idioma español.' },
+    { nombre: 'Educación Cultural y Artística', descripcion: 'Desarrollo de la creatividad y expresión artística.' }
+  ];
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private cursosService: CursosService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(pm => {
@@ -164,4 +171,56 @@ export class AddmateriasComponent implements OnInit {
         }
       });
   }
+
+  onMateriaSeleccionada(event: any): void {
+    const nombreSeleccionado = event.target.value;
+    if (!nombreSeleccionado) return;
+
+    const materiaSeleccionada = this.materiasBasicas.find(m => m.nombre === nombreSeleccionado);
+    if (!materiaSeleccionada) return;
+
+    // Verificar si ya está en el formulario
+    const yaExiste = this.materias.controls.some(ctrl => {
+      const nombre = ctrl.get('nombre')?.value?.trim().toLowerCase();
+      return nombre === materiaSeleccionada.nombre.toLowerCase();
+    });
+
+    if (yaExiste) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Materia ya agregada',
+        text: `La materia "${materiaSeleccionada.nombre}" ya se encuentra en el formulario.`,
+        confirmButtonColor: '#4F46E5'
+      });
+      event.target.value = ''; 
+      return;
+    }
+
+    // Buscar una fila vacía existente
+    const filaVacia = this.materias.controls.find(ctrl => {
+      const nombre = ctrl.get('nombre')?.value?.trim();
+      const descripcion = ctrl.get('descripcion')?.value?.trim();
+      return !nombre && !descripcion;
+    });
+
+    if (filaVacia) {
+      // Llenar la fila vacía
+      filaVacia.patchValue({
+        nombre: materiaSeleccionada.nombre,
+        descripcion: materiaSeleccionada.descripcion
+      });
+    } else {
+      // Crear nueva fila con los datos
+      const nuevaMateria = this.fb.group({
+        nombre: [materiaSeleccionada.nombre, Validators.required],
+        descripcion: [materiaSeleccionada.descripcion, Validators.required]
+      });
+      this.materias.push(nuevaMateria);
+    }
+
+    // Limpiar el combo box
+    event.target.value = '';
+  }
+
+
 }
