@@ -1,13 +1,13 @@
 <nav class="bg-indigo-600 text-white shadow-md px-6 py-3 flex items-center justify-between relative">
     <!-- Nombre del sistema -->
     <h1 (click)="goHome()" class="text-xl font-bold cursor-pointer hover:text-indigo-200 transition">
-        Sistema Escolar
+        Sistema PDGA
     </h1>
 
     <!-- Opciones del menú -->
     <div class="flex items-center space-x-6">
 
-        <!-- 🔹 Administrar (solo visible para docentes) -->
+        <!-- Administrar (solo visible para docentes) -->
         <div class="relative" *ngIf="usuario?.rol === 'docente'">
             <button (click)="toggleMenu()" class="hover:text-indigo-200 transition font-medium flex items-center gap-1">
                 Administrar
@@ -37,7 +37,7 @@
         </button>
 
 
-        <!-- 🚪 Cerrar sesión -->
+        <!-- Cerrar sesión -->
         <button (click)="logout()"
             class="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-1.5 rounded-lg shadow-sm transition">
             Cerrar sesión
