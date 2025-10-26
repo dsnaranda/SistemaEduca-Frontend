@@ -98,6 +98,8 @@
                             <th class="p-3 text-left">Nombres</th>
                             <th class="p-3 text-left">Cédula</th>
                             <th class="p-3 text-left">Correo</th>
+                            <th class="p-3 text-center w-24">Acciones</th>
+
                         </tr>
                     </thead>
 
@@ -109,6 +111,14 @@
                             <td class="p-3">{{ e.nombres }}</td>
                             <td class="p-3 text-gray-600">{{ e.ci }}</td>
                             <td class="p-3 text-sm text-gray-500">{{ e.email }}</td>
+                            <!-- Botón Editar -->
+                            <td class="p-3 text-center">
+                                <button (click)="abrirModal(e)"
+                                    class="bg-indigo-600 text-white px-2 py-1 rounded text-sm">
+                                    Editar
+                                </button>
+
+                            </td>
                         </tr>
 
                         <tr *ngIf="estudiantesLista.length === 0">
@@ -118,6 +128,52 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div *ngIf="mostrarModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-5 border border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 text-center">Editar estudiante</h2>
+                        <p class="text-xs text-gray-500 text-center mb-3">Modifica solo los datos necesarios</p>
+
+                        <form (ngSubmit)="guardarCambios()" class="space-y-2">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-0.5">Nombres</label>
+                                <input [(ngModel)]="estudianteSeleccionado.nombres" name="nombres"
+                                    class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-0.5">Apellidos</label>
+                                <input [(ngModel)]="estudianteSeleccionado.apellidos" name="apellidos"
+                                    class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-0.5">Cédula</label>
+                                    <input [(ngModel)]="estudianteSeleccionado.ci" name="ci" maxlength="10"
+                                        class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-0.5">Correo</label>
+                                    <input [(ngModel)]="estudianteSeleccionado.email" name="email" type="email"
+                                        class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end space-x-2 mt-3">
+                                <button type="button" (click)="cerrarModal()"
+                                    class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded-md text-sm font-medium">
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm font-medium">
+                                    Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 

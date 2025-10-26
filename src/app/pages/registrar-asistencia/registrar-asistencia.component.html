@@ -1,19 +1,47 @@
-<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-10 px-4">
+<div class="bg-gray-50 flex flex-col items-center py-10 px-4">
     <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-6xl border border-gray-100">
-        <!-- Encabezado -->
-        <div class="text-center mb-8">
-            <h2 class="text-2xl font-extrabold text-gray-800 mb-1">Registro de Asistencia</h2>
 
+        <!-- 🔹 Encabezado -->
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-extrabold text-gray-800 mb-1">Registro de Asistencia</h2>
             <p *ngIf="curso" class="text-indigo-700 text-lg font-semibold">
                 {{ curso.curso }} - {{ curso.nivel }}°{{ curso.paralelo }}
             </p>
-
-            <p class="text-gray-500 text-sm italic mt-1">
-                Fecha: {{ fechaActual }}
-            </p>
         </div>
 
-        <!-- Formulario -->
+        <!-- 🔹 Controles superiores -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-5">
+            <!-- Fecha -->
+            <div class="flex items-center gap-2" *ngIf="!modoAnalitico">
+                <label for="fecha" class="text-gray-700 font-medium">Seleccionar fecha:</label>
+                <input type="date" id="fecha" [(ngModel)]="fechaSeleccionada" (change)="cargarAsistenciaPorFecha()"
+                    class="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700" />
+            </div>
+
+            <!-- Filtro de estado -->
+            <div class="flex items-center gap-2" *ngIf="!modoAnalitico">
+                <label for="filtro" class="text-gray-700 font-medium">Filtrar por:</label>
+                <select id="filtro" [(ngModel)]="filtroEstado" (change)="aplicarFiltro()"
+                    class="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700">
+                    <option value="Todos">Todos</option>
+                    <option value="Presente">Presentes</option>
+                    <option value="Ausente">Ausentes</option>
+                </select>
+            </div>
+
+            <!-- Selector de rango (modo analítico) -->
+            <div class="flex items-center gap-2" *ngIf="modoAnalitico">
+                <label class="text-gray-700 font-medium">Filtrar por rango:</label>
+                <select [(ngModel)]="filtroTiempo" (change)="cargarFaltasAnaliticas()"
+                    class="border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700">
+                    <option value="dia">Día actual</option>
+                    <option value="semana">Semana actual</option>
+                    <option value="mes">Mes actual</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 🔹 Tabla principal -->
         <form *ngIf="estudiantesForm" [formGroup]="estudiantesForm" (ngSubmit)="guardarAsistencia()">
             <div formArrayName="estudiantes" class="overflow-hidden border border-gray-200 rounded-xl">
                 <table class="min-w-full border-collapse">
@@ -23,9 +51,10 @@
                             <th class="p-3 text-left w-12">#</th>
                             <th class="p-3 text-left">Apellidos</th>
                             <th class="p-3 text-left">Nombres</th>
-                            <th class="p-3 text-left">Cédula</th>
-                            <th class="p-3 text-left">Correo</th>
-                            <th class="p-3 text-center">Asistencia</th>
+                            <th class="p-3 text-center">Estado</th>
+                            <th class="p-3 text-center" *ngIf="modoAnalitico">Fecha</th>
+                            <th class="p-3 text-center" *ngIf="!modoJustificar">Asistencia</th>
+                            <th class="p-3 text-center" *ngIf="modoJustificar">Justificar</th>
                         </tr>
                     </thead>
 
@@ -35,12 +64,36 @@
                             <td class="p-3 font-medium text-gray-600">{{ i + 1 }}</td>
                             <td class="p-3">{{ est.value.apellidos }}</td>
                             <td class="p-3">{{ est.value.nombres }}</td>
-                            <td class="p-3 text-gray-600">{{ est.value.ci }}</td>
-                            <td class="p-3 text-sm text-gray-500">{{ est.value.email }}</td>
+
+                            <!-- Estado actual -->
                             <td class="p-3 text-center">
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" formControlName="presente"
+                                <span [ngClass]="{
+                  'text-green-600 font-semibold': est.value.estado === 'Presente',
+                  'text-red-600 font-semibold': est.value.estado === 'Ausente',
+                  'text-blue-600 font-semibold italic': est.value.estado === 'Justificado',
+                  'text-gray-400 italic': !est.value.estado
+                }">
+                                    {{ est.value.estado || '—' }}
+                                </span>
+                            </td>
+
+                            <!-- Fecha (solo modo analítico) -->
+                            <td class="p-3 text-center" *ngIf="modoAnalitico">
+                                {{ est.value.fecha || '—' }}
+                            </td>
+
+                            <!-- Checkbox asistencia / justificación -->
+                            <td class="p-3 text-center">
+                                <!-- Modo normal -->
+                                <label class="inline-flex items-center cursor-pointer" *ngIf="!modoJustificar">
+                                    <input type="checkbox" formControlName="presente" (change)="actualizarEstado(est)"
                                         class="form-checkbox w-5 h-5 text-indigo-600 rounded-md focus:ring-indigo-500 transition" />
+                                </label>
+
+                                <!-- Modo justificación -->
+                                <label class="inline-flex items-center cursor-pointer" *ngIf="modoJustificar">
+                                    <input type="checkbox" formControlName="justificar"
+                                        class="form-checkbox w-5 h-5 text-blue-600 rounded-md focus:ring-blue-500 transition" />
                                 </label>
                             </td>
                         </tr>
@@ -48,8 +101,31 @@
                 </table>
             </div>
 
-            <div class="flex justify-end mt-8">
-                <button type="submit"
+            <!-- 🔹 Botones -->
+            <div class="flex justify-end items-center gap-3 mt-8">
+                <!-- Normal -->
+                <button *ngIf="!modoJustificar" type="button"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium px-6 py-2.5 rounded-lg shadow-md transition-all duration-200"
+                    (click)="activarModoJustificar()">
+                    Justificar faltas
+                </button>
+
+                <!-- Confirmar justificación -->
+                <button *ngIf="modoJustificar" type="button"
+                    class="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-md transition-all duration-200"
+                    (click)="confirmarJustificacion()">
+                    Confirmar justificación
+                </button>
+
+                <!-- Cancelar -->
+                <button *ngIf="modoJustificar" type="button"
+                    class="bg-gray-400 hover:bg-gray-500 text-white font-medium px-6 py-2.5 rounded-lg shadow-md transition-all duration-200"
+                    (click)="cancelarJustificacion()">
+                    Cancelar
+                </button>
+
+                <!-- Guardar asistencia -->
+                <button *ngIf="!modoJustificar" type="submit"
                     class="bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-medium px-8 py-2.5 rounded-lg shadow-md transition-all duration-200">
                     Guardar asistencia
                 </button>

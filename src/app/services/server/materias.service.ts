@@ -18,4 +18,8 @@ export class MateriasService {
     return this.http.get<any>(`${this.baseUrl}/trimestres/verificar/materia/${materiaId}`);
   }
 
+  crearTrimestresPorMateria(materiaId: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/trimestres/crearPorMateria`, { materia_id: materiaId });
+  }
+
 }

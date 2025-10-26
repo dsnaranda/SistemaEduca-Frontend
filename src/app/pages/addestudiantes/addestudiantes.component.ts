@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormsModule, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CursosService } from '../../services/server/cursos.service';
+import { LoginService } from '../../services/server/login.service';
 import Swal from 'sweetalert2';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { finalize } from 'rxjs/operators';
@@ -10,7 +11,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-addestudiantes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavbarComponent],
+  imports: [CommonModule, ReactiveFormsModule, NavbarComponent, FormsModule],
   templateUrl: './addestudiantes.component.html',
   styleUrl: './addestudiantes.component.css'
 })
@@ -20,11 +21,23 @@ export class AddestudiantesComponent implements OnInit {
   estudiantesForm!: FormGroup;
   estudiantesLista: any[] = [];
   ready = false;
+  mostrarModal = false;
+  estudianteSeleccionado: any = {};
+
+  abrirModal(estudiante: any) {
+    this.estudianteSeleccionado = { ...estudiante };
+    this.mostrarModal = true;
+  }
+
+  cerrarModal() {
+    this.mostrarModal = false;
+  }
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private cursosService: CursosService,
+    private loginService: LoginService,
     private router: Router
   ) { }
 
@@ -259,5 +272,43 @@ export class AddestudiantesComponent implements OnInit {
     });
   }
 
+  guardarCambios() {
+    const { id, _id, nombres, apellidos, ci, email } = this.estudianteSeleccionado;
+
+    if (!nombres || !apellidos || !ci || !email) {
+      Swal.fire('Atención', 'Todos los campos son obligatorios', 'warning');
+      return;
+    }
+
+    if (!/^[0-9]{1,10}$/.test(ci)) {
+      Swal.fire('Atención', 'La cédula solo puede contener números (máx. 10)', 'warning');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Swal.fire('Atención', 'Correo electrónico inválido', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Guardando cambios...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    this.loginService.updateUsuario(id || _id, { nombres, apellidos, ci, email }).subscribe({
+      next: (res) => {
+        Swal.close();
+        Swal.fire('Éxito', res.mensaje || 'Datos actualizados correctamente', 'success');
+        this.cerrarModal();
+        this.cargarEstudiantes();
+      },
+      error: (err) => {
+        Swal.close();
+        Swal.fire('Error', err.error?.error || 'Error al actualizar el usuario.', 'error');
+      }
+    });
+  }
 
 }

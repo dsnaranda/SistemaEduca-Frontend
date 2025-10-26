@@ -61,4 +61,14 @@ export class CursosService {
     return this.http.get<any>(url);
   }
 
+  getAsistenciaPorFecha(cursoId: string, fecha: string): Observable<any> {
+    const url = `${this.baseUrl}/asistencia/curso/${cursoId}?fecha=${fecha}`;
+    return this.http.get<any>(url);
+  }
+
+  actualizarAsistencia(data: any): Observable<any> {
+    const url = `${this.baseUrl}/asistencia/actualizar`;
+    return this.http.put<any>(url, data);
+  }
+
 }

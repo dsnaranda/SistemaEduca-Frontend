@@ -9,6 +9,10 @@
 
         <!-- Administrar (solo visible para docentes) -->
         <ng-container *ngIf="usuario?.rol === 'docente'">
+            <button (click)="goHome()" class="hover:text-indigo-200 transition font-medium">
+                Cursos
+            </button>
+
             <button (click)="goTo('/asistencia')" class="hover:text-indigo-200 transition font-medium">
                 Asistencia
             </button>

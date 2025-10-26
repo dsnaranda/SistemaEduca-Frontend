@@ -39,4 +39,9 @@ export class LoginService {
     );
   }
 
+  updateUsuario(id: string, data: any): Observable<any> {
+    const url = `${this.baseUrl}/usuarios/${id}`;
+    return this.http.put<any>(url, data);
+  }
+  
 }
