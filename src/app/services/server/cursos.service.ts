@@ -52,8 +52,13 @@ export class CursosService {
   }
 
   getCursosPorEstudiante(estudianteId: string): Observable<any> {
-  const url = `${this.baseUrl}/cursos/estudiante/${estudianteId}`;
-  return this.http.get<any>(url);
-}
+    const url = `${this.baseUrl}/cursos/estudiante/${estudianteId}`;
+    return this.http.get<any>(url);
+  }
+
+  getTodosLosCursos(): Observable<any> {
+    const url = `${this.baseUrl}/cursos/todos`;
+    return this.http.get<any>(url);
+  }
 
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LoginService } from '../../services/server/login.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
@@ -12,7 +12,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-addcursos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavbarComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, NavbarComponent],
   templateUrl: './addcursos.component.html',
   styleUrls: ['./addcursos.component.css']
 })
@@ -23,6 +23,7 @@ export class AddcursosComponent implements OnInit {
   docentes: any[] = [];
   ready = false;
   docenteNombre: string = '';
+  modoVista: 'mis' | 'todos' = 'mis';
 
   constructor(
     private fb: FormBuilder,
@@ -70,7 +71,12 @@ export class AddcursosComponent implements OnInit {
 
 
   cargarCursos(): void {
-    this.cursosService.getCursosPorDocente(this.docenteId)
+    const peticion =
+      this.modoVista === 'todos'
+        ? this.cursosService.getTodosLosCursos()
+        : this.cursosService.getCursosPorDocente(this.docenteId);
+
+    peticion
       .pipe(
         finalize(() => {
           Swal.close();
@@ -81,10 +87,10 @@ export class AddcursosComponent implements OnInit {
         next: (res) => {
           this.cursos = res.cursos || [];
 
-          // 🔹 Extraer el nombre del docente desde el mensaje
-          if (res.mensaje) {
+          // Si es "mis cursos", extrae el nombre del docente
+          if (this.modoVista === 'mis' && res.mensaje) {
             const match = res.mensaje.match(/docente\s(.+)/i);
-            this.docenteNombre = match ? match[1] : ''; // "Cesar Aguacondo"
+            this.docenteNombre = match ? match[1] : '';
           } else {
             this.docenteNombre = '';
           }
@@ -94,6 +100,17 @@ export class AddcursosComponent implements OnInit {
           console.error('Error al obtener cursos:', err);
         }
       });
+  }
+
+  cambiarVista(): void {
+    this.ready = false;
+    Swal.fire({
+      title: 'Cambiando vista...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+    this.cargarCursos();
   }
 
   onSubmit(): void {

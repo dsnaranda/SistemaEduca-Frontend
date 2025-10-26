@@ -46,21 +46,20 @@ export class AddmateriasComponent implements OnInit {
 
       this.cursoId = id;
 
-      // Inicializa formulario si aún no existe
+      // Inicializar formulario
       if (!this.materiasForm) {
         this.materiasForm = this.fb.group({
           materias: this.fb.array([this.crearMateria()])
         });
       } else {
-        // Si cambió de curso, limpia el form
         this.materias.clear();
         this.materias.push(this.crearMateria());
       }
 
-      // Carga dependencias del curso
+      // Cargar curso desde localStorage
       this.cargarCursoDesdeLocalStorage();
 
-      // loader antes de pedir materias
+      // Mostrar loader inicial
       Swal.fire({
         title: 'Cargando información del curso...',
         allowOutsideClick: false,
@@ -93,20 +92,78 @@ export class AddmateriasComponent implements OnInit {
 
   private cargarCursoDesdeLocalStorage(): void {
     const guardados = localStorage.getItem('cursosDocente');
+
     if (guardados) {
       const lista = JSON.parse(guardados);
       this.cursoSeleccionado =
         lista.find((c: any) => c.id === this.cursoId || c._id === this.cursoId) || null;
-    } else {
-      this.cursoSeleccionado = null;
     }
+
+    // Si no lo encuentra en localStorage → buscar en API del docente
+    if (!this.cursoSeleccionado) {
+      const data = localStorage.getItem('usuario');
+      if (!data) {
+        console.warn('No se encontró información del usuario en localStorage.');
+        this.cursoSeleccionado = null;
+        return;
+      }
+
+      const usuario = JSON.parse(data);
+      const docenteId = usuario.id;
+
+      this.cursosService.getCursosPorDocente(docenteId).subscribe({
+        next: (res: any) => {
+          if (res && Array.isArray(res.cursos)) {
+            const cursoEncontrado = res.cursos.find(
+              (c: any) => c.id === this.cursoId || c._id === this.cursoId
+            );
+
+            if (cursoEncontrado) {
+              this.cursoSeleccionado = cursoEncontrado;
+            } else {
+              // No lo encontró entre los cursos del docente → buscar en todos los cursos
+              console.warn('El curso no fue encontrado en los cursos del docente. Intentando buscar en todos los cursos...');
+              this.buscarCursoEnTodos();
+            }
+          } else {
+            console.warn('Respuesta inesperada al obtener cursos por docente:', res);
+            this.buscarCursoEnTodos();
+          }
+        },
+        error: (err) => {
+          console.error('Error al obtener cursos desde la API del docente:', err);
+          this.buscarCursoEnTodos();
+        }
+      });
+    }
+  }
+
+  private buscarCursoEnTodos(): void {
+    this.cursosService.getTodosLosCursos().subscribe({
+      next: (res: any) => {
+        if (res && Array.isArray(res.cursos)) {
+          const cursoEncontrado = res.cursos.find(
+            (c: any) => c.id === this.cursoId || c._id === this.cursoId
+          );
+          if (cursoEncontrado) {
+            this.cursoSeleccionado = cursoEncontrado;
+          } else {
+            console.warn('El curso no fue encontrado ni en los cursos del docente ni en todos los cursos.');
+            this.cursoSeleccionado = null;
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error al obtener la lista completa de cursos:', err);
+        this.cursoSeleccionado = null;
+      }
+    });
   }
 
   private cargarMaterias(): void {
     this.cursosService.getMateriasPorCurso(this.cursoId)
       .pipe(
         finalize(() => {
-          // cierre garantizado del loader y mostramos contenido
           Swal.close();
           this.ready = true;
         })
@@ -114,7 +171,6 @@ export class AddmateriasComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.materiasLista = Array.isArray(res) ? res : (res.materias || []);
-          // console.log('Materias del curso', this.cursoId, this.materiasLista);
         },
         error: (err) => {
           Swal.fire('Error', 'Error al obtener materias.', 'error');
@@ -133,7 +189,7 @@ export class AddmateriasComponent implements OnInit {
 
     const materias = this.materiasForm.value.materias;
 
-    // Loader durante guardado (independiente del inicial)
+    // Loader durante guardado
     Swal.fire({
       title: 'Guardando materias...',
       text: 'Por favor espera un momento',
@@ -142,34 +198,70 @@ export class AddmateriasComponent implements OnInit {
       didOpen: () => Swal.showLoading()
     });
 
-    this.cursosService.addMaterias(this.cursoId, materias)
-      .pipe(finalize(() => Swal.close()))
-      .subscribe({
-        next: () => {
+    this.cursosService.addMaterias(this.cursoId, materias).subscribe({
+      next: () => {
+        // 🔹 Cierra el loader antes de mostrar el éxito
+        Swal.close();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Materias añadidas correctamente.',
+          confirmButtonText: 'Aceptar'
+        }).then(() => {
+          this.materiasForm.reset();
+          this.materias.clear();
+          this.materias.push(this.crearMateria());
+          this.ready = false;
+
           Swal.fire({
-            icon: 'success',
-            title: 'Éxito',
-            text: 'Materias añadidas correctamente.'
-          }).then(() => {
-            // Refresca SOLO los datos en esta misma ruta
-            this.materiasForm.reset();
-            this.materias.clear();
-            this.materias.push(this.crearMateria());
-            // Puedes mostrar un mini loader opcional aquí si quieres
-            this.ready = false;
-            Swal.fire({
-              title: 'Actualizando lista...',
-              allowOutsideClick: false,
-              showConfirmButton: false,
-              didOpen: () => Swal.showLoading()
-            });
-            this.cargarMaterias();
+            title: 'Actualizando lista...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading()
           });
-        },
-        error: (err) => {
-          Swal.fire('Error', err.error?.error || 'No se pudieron guardar las materias.', 'error');
+          this.cargarMaterias();
+        });
+      },
+      error: (err) => {
+        // 🔹 Cierra el loader antes de mostrar el error
+        Swal.close();
+        console.error('Error al guardar materias:', err);
+
+        const errorData = err?.error || {};
+        const errorMsg =
+          typeof errorData === 'string'
+            ? errorData
+            : errorData.error || 'No se pudieron guardar las materias.';
+        const duplicadas = Array.isArray(errorData.duplicadas)
+          ? errorData.duplicadas
+          : [];
+
+        if (duplicadas.length > 0) {
+          const listaHtml = duplicadas.map((m: string) => `• ${m}`).join('<br>');
+          Swal.fire({
+            icon: 'warning',
+            title: 'Materias duplicadas',
+            html: `
+              <p>${errorMsg}</p>
+              <div class="mt-2 text-left text-sm text-gray-700">
+                ${listaHtml}
+              </div>
+            `,
+            confirmButtonColor: '#4F46E5',
+            confirmButtonText: 'Aceptar'
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorMsg || 'Ocurrió un error desconocido.',
+            confirmButtonColor: '#EF4444',
+            confirmButtonText: 'Aceptar'
+          });
         }
-      });
+      }
+    });
   }
 
   onMateriaSeleccionada(event: any): void {
@@ -179,7 +271,6 @@ export class AddmateriasComponent implements OnInit {
     const materiaSeleccionada = this.materiasBasicas.find(m => m.nombre === nombreSeleccionado);
     if (!materiaSeleccionada) return;
 
-    // Verificar si ya está en el formulario
     const yaExiste = this.materias.controls.some(ctrl => {
       const nombre = ctrl.get('nombre')?.value?.trim().toLowerCase();
       return nombre === materiaSeleccionada.nombre.toLowerCase();
@@ -192,11 +283,10 @@ export class AddmateriasComponent implements OnInit {
         text: `La materia "${materiaSeleccionada.nombre}" ya se encuentra en el formulario.`,
         confirmButtonColor: '#4F46E5'
       });
-      event.target.value = ''; 
+      event.target.value = '';
       return;
     }
 
-    // Buscar una fila vacía existente
     const filaVacia = this.materias.controls.find(ctrl => {
       const nombre = ctrl.get('nombre')?.value?.trim();
       const descripcion = ctrl.get('descripcion')?.value?.trim();
@@ -204,13 +294,11 @@ export class AddmateriasComponent implements OnInit {
     });
 
     if (filaVacia) {
-      // Llenar la fila vacía
       filaVacia.patchValue({
         nombre: materiaSeleccionada.nombre,
         descripcion: materiaSeleccionada.descripcion
       });
     } else {
-      // Crear nueva fila con los datos
       const nuevaMateria = this.fb.group({
         nombre: [materiaSeleccionada.nombre, Validators.required],
         descripcion: [materiaSeleccionada.descripcion, Validators.required]
@@ -218,9 +306,6 @@ export class AddmateriasComponent implements OnInit {
       this.materias.push(nuevaMateria);
     }
 
-    // Limpiar el combo box
     event.target.value = '';
   }
-
-
 }

@@ -61,11 +61,21 @@
 
         </div>
 
+        <!-- Selector de vista -->
+        <div class="flex justify-end mb-4">
+            <select [(ngModel)]="modoVista" (change)="cambiarVista()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="mis">Mis cursos asignados</option>
+                <option value="todos">Todos los cursos registrados</option>
+            </select>
+        </div>
+
         <!-- Lista de cursos -->
         <div class="bg-white shadow-md rounded-2xl p-6 w-full">
             <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">
-                Mis cursos asignados
+                {{ modoVista === 'mis' ? 'Mis cursos asignados' : 'Todos los cursos registrados' }}
             </h3>
+
 
             <div *ngIf="cursos.length > 0; else noCursos">
                 <div *ngFor="let curso of cursos"
@@ -84,8 +94,10 @@
 
                     <div class="flex items-center gap-3">
                         <span class="text-indigo-600 text-sm font-medium">
-                            Asignado a: {{ docenteNombre || '—' }}
+                            Asignado a:
+                            {{ modoVista === 'mis' ? (docenteNombre || '—') : (curso.docente || 'Sin docente') }}
                         </span>
+
                         <button (click)="irAEstudiantes(curso.id)"
                             class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md transition">
                             Añadir estudiantes
