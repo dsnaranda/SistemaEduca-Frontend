@@ -16,7 +16,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   isPasswordVisible: boolean = false;
 
-  constructor(private fb: FormBuilder, private router: Router, private loginService: LoginService) {}
+  constructor(private fb: FormBuilder, private router: Router, private loginService: LoginService) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -42,13 +42,13 @@ export class LoginComponent implements OnInit {
           Swal.close();
 
           if (response && response.usuario && response.token) {
-            // ✅ Guardar el token y el usuario en localStorage
+            // Guardar el token y el usuario en localStorage
             localStorage.setItem('token', response.token);
             localStorage.setItem('usuario', JSON.stringify(response.usuario));
 
             Swal.fire({
               title: '¡Bienvenido!',
-              text: `Hola ${response.usuario.nombres}`,
+              text: `Hola ${response.usuario.nombres} ${response.usuario.apellidos}`,
               icon: 'success',
               confirmButtonText: 'Continuar'
             }).then(() => {

@@ -1,28 +1,41 @@
 <h3 class="text-xl font-semibold text-gray-800 mb-8 text-center">
-  {{ contexto === 'home' ? 'Mis cursos asignados' : 'Selecciona un curso para registrar asistencia' }}
+  {{ contexto === 'home' ? 'Mis cursos asignados:' : 'Selecciona un curso para registrar asistencia:' }}
 </h3>
 
-<div
-  *ngIf="cursos.length > 0; else noCursos"
-  class="grid gap-8"
-  style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));"
->
-  <div
-    *ngFor="let curso of cursos"
-    (click)="abrirCurso(curso.id)"
+<div *ngIf="cursos.length > 0; else noCursos" class="grid gap-8"
+  style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+  <div *ngFor="let curso of cursos" (click)="abrirCurso(curso.id)"
     class="cursor-pointer border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all flex flex-col justify-between"
     [ngClass]="{
-      'hover:bg-indigo-50': contexto === 'home',
-      'hover:bg-green-50': contexto === 'asistencia'
-    }"
-  >
+         'hover:bg-indigo-50': contexto === 'home',
+         'hover:bg-green-50': contexto === 'asistencia'
+       }">
+
     <p class="text-xl font-semibold text-gray-800 mb-3 text-center">
       {{ curso.nombre }} - {{ curso.nivel }}°{{ curso.paralelo }}
     </p>
 
     <div class="text-sm text-gray-600 space-y-2 text-center">
-      <p>👨‍🎓 Estudiantes: {{ curso.total_estudiantes }}</p>
-      <p>📘 Materias: {{ curso.total_materias }}</p>
+      <p>Estudiantes: {{ curso.total_estudiantes }}</p>
+      <p>Materias: {{ curso.total_materias }}</p>
     </div>
   </div>
 </div>
+
+<!-- Plantilla si no hay cursos -->
+<ng-template #noCursos>
+  <div class="flex justify-center items-center">
+    <div class="border border-gray-200 bg-white rounded-2xl shadow-md p-8 max-w-md text-center">
+      <p class="text-2xl font-semibold text-gray-700 mb-2">No tienes cursos asignados</p>
+      <p class="text-gray-500 text-sm">
+        Aún no se han registrado cursos en tu cuenta.<br>
+        Contacta con el administrador o crea uno nuevo.
+      </p>
+      <button *ngIf="contexto === 'home'" routerLink="/addcursos"
+        class="mt-5 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+        ➕ Crear nuevo curso
+      </button>
+    </div>
+  </div>
+</ng-template>

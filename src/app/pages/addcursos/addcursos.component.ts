@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 
 import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { CursosService } from '../../services/server/cursos.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-addcursos',
@@ -17,7 +18,8 @@ import { CursosService } from '../../services/server/cursos.service';
 export class AddcursosComponent implements OnInit {
   cursoForm!: FormGroup;
   docenteId: string = '';
-  cursos: any[] = []; // 🔹 aquí guardaremos los cursos del docente
+  cursos: any[] = [];
+  ready = false;
 
   constructor(
     private fb: FormBuilder,
@@ -38,19 +40,35 @@ export class AddcursosComponent implements OnInit {
       paralelo: ['', Validators.required]
     });
 
-    // 🔹 Obtener los cursos del docente al cargar
+    // Mostrar loader inicial antes de cargar cursos
+    Swal.fire({
+      title: 'Cargando cursos...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => Swal.showLoading()
+    });
+
     this.cargarCursos();
   }
 
   cargarCursos(): void {
-    this.cursosService.getCursosPorDocente(this.docenteId).subscribe({
-      next: (res) => {
-        this.cursos = res.cursos || [];
-      },
-      error: (err) => {
-        console.error('Error al obtener cursos:', err);
-      }
-    });
+    this.cursosService.getCursosPorDocente(this.docenteId)
+      .pipe(
+        finalize(() => {
+          // Siempre cerrar loader y mostrar contenido
+          Swal.close();
+          this.ready = true;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.cursos = res.cursos || [];
+        },
+        error: (err) => {
+          Swal.fire('Error', 'No se pudieron cargar los cursos.', 'error');
+          console.error('Error al obtener cursos:', err);
+        }
+      });
   }
 
   onSubmit(): void {
@@ -60,35 +78,48 @@ export class AddcursosComponent implements OnInit {
         docente_id: this.docenteId
       };
 
+      // Loader mientras se guarda el nuevo curso
       Swal.fire({
         title: 'Guardando curso...',
         text: 'Por favor espera un momento',
         allowOutsideClick: false,
+        showConfirmButton: false,
         didOpen: () => Swal.showLoading()
       });
 
-      this.cursosService.addCurso(data).subscribe({
-        next: (res) => {
-          Swal.close();
-          Swal.fire({
-            icon: 'success',
-            title: 'Curso añadido correctamente',
-            text: res.mensaje || 'El curso ha sido registrado exitosamente.',
-            confirmButtonText: 'Aceptar'
-          });
-          this.cursoForm.reset();
-          this.cargarCursos(); // 🔹 recargar lista
-        },
-        error: (err) => {
-          Swal.close();
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: err.error?.error || 'No se pudo registrar el curso.',
-            confirmButtonText: 'Aceptar'
-          });
-        }
-      });
+      this.cursosService.addCurso(data)
+        .pipe(finalize(() => Swal.close()))
+        .subscribe({
+          next: (res) => {
+            Swal.fire({
+              icon: 'success',
+              title: 'Curso añadido correctamente',
+              text: res.mensaje || 'El curso ha sido registrado exitosamente.',
+              confirmButtonText: 'Aceptar'
+            }).then(() => {
+              this.cursoForm.reset();
+              this.ready = false;
+
+              // Mostrar loader mientras recargamos cursos
+              Swal.fire({
+                title: 'Actualizando lista...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+              });
+
+              this.cargarCursos();
+            });
+          },
+          error: (err) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: err.error?.error || 'No se pudo registrar el curso.',
+              confirmButtonText: 'Aceptar'
+            });
+          }
+        });
     } else {
       Swal.fire({
         icon: 'warning',
@@ -99,7 +130,6 @@ export class AddcursosComponent implements OnInit {
     }
   }
 
-
   irAEstudiantes(cursoId: string): void {
     this.router.navigate(['/cursos', cursoId, 'estudiantes']);
   }
@@ -107,6 +137,4 @@ export class AddcursosComponent implements OnInit {
   irAMaterias(cursoId: string): void {
     this.router.navigate(['/cursos', cursoId, 'materias']);
   }
-
-
 }

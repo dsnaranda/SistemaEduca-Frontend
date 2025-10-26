@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CursosService } from '../../services/server/cursos.service';
 import Swal from 'sweetalert2';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-addestudiantes',
@@ -18,13 +19,14 @@ export class AddestudiantesComponent implements OnInit {
   cursoSeleccionado: any = null;
   estudiantesForm!: FormGroup;
   estudiantesLista: any[] = [];
+  ready = false;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private cursosService: CursosService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((pm) => {
@@ -45,6 +47,15 @@ export class AddestudiantesComponent implements OnInit {
         this.estudiantes.clear();
         this.estudiantes.push(this.crearEstudiante());
       }
+
+      // Mostrar loader inicial antes de cargar datos
+      Swal.fire({
+        title: 'Cargando estudiantes...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+
       this.cargarCursoDesdeLocalStorage();
       this.cargarEstudiantes();
     });
@@ -83,18 +94,27 @@ export class AddestudiantesComponent implements OnInit {
     }
   }
 
-  // 🔹 Obtener los estudiantes del curso
+  // Obtener los estudiantes del curso
   cargarEstudiantes(): void {
-    this.cursosService.getEstudiantesPorCurso(this.cursoId).subscribe({
-      next: (res) => {
-        this.estudiantesLista = res.estudiantes || [];
-        console.log('Estudiantes del curso:', this.estudiantesLista);
-      },
-      error: (err) => {
-        console.error('Error al obtener estudiantes:', err);
-        this.estudiantesLista = [];
-      }
-    });
+    this.cursosService.getEstudiantesPorCurso(this.cursoId)
+      .pipe(
+        finalize(() => {
+          // Cerrar loader y mostrar el contenido
+          Swal.close();
+          this.ready = true;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.estudiantesLista = res.estudiantes || [];
+          console.log('Estudiantes del curso:', this.estudiantesLista);
+        },
+        error: (err) => {
+          Swal.fire('Error', 'No se pudieron cargar los estudiantes.', 'error');
+          console.error('Error al obtener estudiantes:', err);
+          this.estudiantesLista = [];
+        }
+      });
   }
 
   onSubmit(): void {
@@ -112,37 +132,48 @@ export class AddestudiantesComponent implements OnInit {
 
     const estudiantes = this.estudiantesForm.value.estudiantes;
 
+    // Loader durante el guardado
     Swal.fire({
       title: 'Guardando estudiantes...',
       text: 'Por favor espera un momento',
       allowOutsideClick: false,
+      showConfirmButton: false,
       didOpen: () => Swal.showLoading()
     });
 
-    this.cursosService.addEstudiantes(this.cursoId, estudiantes).subscribe({
-      next: (res) => {
-        Swal.close();
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: res.mensaje || 'Estudiantes añadidos correctamente.',
-          confirmButtonText: 'Aceptar'
-        }).then(() => {
-          this.estudiantesForm.reset();
-          this.estudiantes.clear();
-          this.estudiantes.push(this.crearEstudiante());
-          this.cargarEstudiantes(); 
-        });
-      },
-      error: (err) => {
-        Swal.close();
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: err.error?.error || 'No se pudieron guardar los estudiantes.',
-          confirmButtonText: 'Aceptar'
-        });
-      }
-    });
+    this.cursosService.addEstudiantes(this.cursoId, estudiantes)
+      .pipe(finalize(() => Swal.close()))
+      .subscribe({
+        next: (res) => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: res.mensaje || 'Estudiantes añadidos correctamente.',
+            confirmButtonText: 'Aceptar'
+          }).then(() => {
+            this.estudiantesForm.reset();
+            this.estudiantes.clear();
+            this.estudiantes.push(this.crearEstudiante());
+
+            // Mostrar loader breve mientras recargamos
+            this.ready = false;
+            Swal.fire({
+              title: 'Actualizando lista...',
+              allowOutsideClick: false,
+              showConfirmButton: false,
+              didOpen: () => Swal.showLoading()
+            });
+            this.cargarEstudiantes();
+          });
+        },
+        error: (err) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: err.error?.error || 'No se pudieron guardar los estudiantes.',
+            confirmButtonText: 'Aceptar'
+          });
+        }
+      });
   }
 }

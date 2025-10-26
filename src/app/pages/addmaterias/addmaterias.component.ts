@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CursosService } from '../../services/server/cursos.service';
 import Swal from 'sweetalert2';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-addmaterias',
@@ -18,16 +19,16 @@ export class AddmateriasComponent implements OnInit {
   cursoSeleccionado: any = null;
   materiasForm!: FormGroup;
   materiasLista: any[] = [];
+  ready = false; 
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private cursosService: CursosService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    // 👉 Suscríbete al id de la URL
     this.route.paramMap.subscribe(pm => {
       const id = pm.get('id') || '';
       if (!id) {
@@ -37,19 +38,29 @@ export class AddmateriasComponent implements OnInit {
       }
 
       this.cursoId = id;
+
       // Inicializa formulario si aún no existe
       if (!this.materiasForm) {
         this.materiasForm = this.fb.group({
           materias: this.fb.array([this.crearMateria()])
         });
       } else {
-        // si cambió de curso, limpia el form
+        // Si cambió de curso, limpia el form
         this.materias.clear();
         this.materias.push(this.crearMateria());
       }
 
-      // Cargar datos dependientes del id
+      // Carga dependencias del curso
       this.cargarCursoDesdeLocalStorage();
+
+      // loader antes de pedir materias
+      Swal.fire({
+        title: 'Cargando información del curso...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+
       this.cargarMaterias();
     });
   }
@@ -77,7 +88,6 @@ export class AddmateriasComponent implements OnInit {
     const guardados = localStorage.getItem('cursosDocente');
     if (guardados) {
       const lista = JSON.parse(guardados);
-      // OJO: asegúrate de comparar con la propiedad correcta (id vs _id)
       this.cursoSeleccionado =
         lista.find((c: any) => c.id === this.cursoId || c._id === this.cursoId) || null;
     } else {
@@ -86,13 +96,24 @@ export class AddmateriasComponent implements OnInit {
   }
 
   private cargarMaterias(): void {
-    this.cursosService.getMateriasPorCurso(this.cursoId).subscribe({
-      next: (res) => {
-        this.materiasLista = Array.isArray(res) ? res : (res.materias || []);
-        console.log('Materias del curso', this.cursoId, this.materiasLista);
-      },
-      error: (err) => console.error('Error al obtener materias:', err)
-    });
+    this.cursosService.getMateriasPorCurso(this.cursoId)
+      .pipe(
+        finalize(() => {
+          // cierre garantizado del loader y mostramos contenido
+          Swal.close();
+          this.ready = true;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          this.materiasLista = Array.isArray(res) ? res : (res.materias || []);
+          // console.log('Materias del curso', this.cursoId, this.materiasLista);
+        },
+        error: (err) => {
+          Swal.fire('Error', 'Error al obtener materias.', 'error');
+          console.error('Error al obtener materias:', err);
+        }
+      });
   }
 
   onSubmit(): void {
@@ -105,29 +126,42 @@ export class AddmateriasComponent implements OnInit {
 
     const materias = this.materiasForm.value.materias;
 
+    // Loader durante guardado (independiente del inicial)
     Swal.fire({
       title: 'Guardando materias...',
       text: 'Por favor espera un momento',
       allowOutsideClick: false,
+      showConfirmButton: false,
       didOpen: () => Swal.showLoading()
     });
 
-    this.cursosService.addMaterias(this.cursoId, materias).subscribe({
-      next: () => {
-        Swal.close();
-        Swal.fire({ icon: 'success', title: 'Éxito', text: 'Materias añadidas correctamente.' })
-          .then(() => {
-            // 🔁 Refresca SOLO los datos en esta misma ruta
+    this.cursosService.addMaterias(this.cursoId, materias)
+      .pipe(finalize(() => Swal.close()))
+      .subscribe({
+        next: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'Materias añadidas correctamente.'
+          }).then(() => {
+            // Refresca SOLO los datos en esta misma ruta
             this.materiasForm.reset();
             this.materias.clear();
             this.materias.push(this.crearMateria());
+            // Puedes mostrar un mini loader opcional aquí si quieres
+            this.ready = false;
+            Swal.fire({
+              title: 'Actualizando lista...',
+              allowOutsideClick: false,
+              showConfirmButton: false,
+              didOpen: () => Swal.showLoading()
+            });
             this.cargarMaterias();
           });
-      },
-      error: (err) => {
-        Swal.close();
-        Swal.fire('Error', err.error?.error || 'No se pudieron guardar las materias.', 'error');
-      }
-    });
+        },
+        error: (err) => {
+          Swal.fire('Error', err.error?.error || 'No se pudieron guardar las materias.', 'error');
+        }
+      });
   }
 }

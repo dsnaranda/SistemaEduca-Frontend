@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { CursosService } from '../../services/server/cursos.service';
+import { LoadingHelper } from '../shared/loading.helper'; 
 
 interface Estudiante {
   id: string;
@@ -49,26 +50,21 @@ export class RegistrarAsistenciaComponent implements OnInit {
     return this.estudiantesForm.get('estudiantes') as FormArray;
   }
 
-  cargarEstudiantes(): void {
-    Swal.fire({
-      title: 'Cargando estudiantes...',
-      didOpen: () => Swal.showLoading(),
-      allowOutsideClick: false,
-    });
+cargarEstudiantes(): void {
+    LoadingHelper.mostrar('Cargando estudiantes...'); // ✅
 
     this.cursosService.getEstudiantesPorCurso(this.cursoId).subscribe({
       next: (res: any) => {
-        Swal.close();
+        LoadingHelper.cerrar();
 
-        // 🔹 Ordenar alfabéticamente por apellidos
         const estudiantesOrdenados: Estudiante[] = (res.estudiantes as Estudiante[]).sort(
-          (a: Estudiante, b: Estudiante) => a.apellidos.localeCompare(b.apellidos)
+          (a, b) => a.apellidos.localeCompare(b.apellidos)
         );
 
         this.curso = res;
         this.estudiantesForm = this.fb.group({
           estudiantes: this.fb.array(
-            estudiantesOrdenados.map((est: Estudiante) =>
+            estudiantesOrdenados.map((est) =>
               this.fb.group({
                 id: [est.id],
                 nombres: [est.nombres],
@@ -81,9 +77,9 @@ export class RegistrarAsistenciaComponent implements OnInit {
           ),
         });
       },
-      error: (err: any) => {
-        Swal.close();
-        Swal.fire('Error', 'No se pudieron cargar los estudiantes.', 'error');
+      error: (err) => {
+        LoadingHelper.cerrar();
+        LoadingHelper.error('No se pudieron cargar los estudiantes.');
         console.error(err);
       },
     });
