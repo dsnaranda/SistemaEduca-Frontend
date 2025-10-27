@@ -7,10 +7,14 @@
     <!-- Opciones del menú -->
     <div class="flex items-center space-x-6">
 
-        <!-- Administrar (solo visible para docentes) -->
+        <!-- Opciones para DOCENTES -->
         <ng-container *ngIf="usuario?.rol === 'docente'">
             <button (click)="goHome()" class="hover:text-indigo-200 transition font-medium">
                 Cursos
+            </button>
+
+            <button (click)="goTo('/calificaciones')" class="hover:text-indigo-200 transition font-medium">
+                Notas
             </button>
 
             <button (click)="goTo('/asistencia')" class="hover:text-indigo-200 transition font-medium">
@@ -22,11 +26,17 @@
             </button>
         </ng-container>
 
+        <!-- Opción exclusiva para ESTUDIANTES -->
+        <ng-container *ngIf="usuario?.rol === 'estudiante'">
+            <button (click)="goTo('/asistencia/estudiante')" class="hover:text-indigo-200 transition font-medium">
+                Asistencia
+            </button>
+        </ng-container>
+
         <!-- Perfil -->
         <button (click)="goProfile()" class="hover:text-indigo-200 transition font-medium">
             {{ usuario ? (usuario.apellidos + ' ' + usuario.nombres) : 'Usuario' }}
         </button>
-
 
         <!-- Cerrar sesión -->
         <button (click)="logout()"

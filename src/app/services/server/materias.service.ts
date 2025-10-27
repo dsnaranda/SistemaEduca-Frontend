@@ -43,4 +43,13 @@ export class MateriasService {
     return this.http.put<any>(`${this.baseUrl}/actividades/calificar/${actividadId}`, body);
   }
 
+  finalizarPromedios(cursoId: string) {
+    const url = `${this.baseUrl}/cursos/finalizar-promedios`;
+    return this.http.put(url, { curso_id: cursoId });
+  }
+
+  getCartillaCurso(cursoId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/cursos/${cursoId}/cartilla`);
+  }
+
 }

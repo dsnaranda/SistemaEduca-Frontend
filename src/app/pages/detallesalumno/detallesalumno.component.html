@@ -1,1 +1,126 @@
 <app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
+
+<div class="min-h-[85vh] bg-gradient-to-br from-indigo-50 to-white flex flex-col items-center py-10 px-4 mt-8">
+    <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-6xl border border-gray-100">
+
+        <!-- CONTENEDOR PRINCIPAL DE DOS COLUMNAS -->
+        <div *ngIf="detalleTrimestre" class="grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-gray-200 pb-8 mb-10">
+
+            <!-- COLUMNA IZQUIERDA: Promedio + Estado -->
+            <div class="flex flex-col justify-center items-center text-center space-y-5 h-full">
+
+                <!-- Promedio -->
+                <div class="bg-indigo-600 text-white w-full rounded-2xl shadow-md py-5 px-4 max-w-sm">
+                    <p class="uppercase text-xs font-semibold tracking-wide opacity-90 mb-1">
+                        Promedio del Trimestre
+                    </p>
+                    <p class="text-4xl font-extrabold">
+                        {{ detalleTrimestre?.promedio_trimestre || '—' }}
+                    </p>
+                </div>
+
+                <!-- Estado -->
+                <div class="w-full py-4 px-4 rounded-2xl shadow-md text-center font-semibold max-w-sm" [ngClass]="{
+            'bg-green-100 text-green-700': detalleTrimestre?.estado === 'cerrado',
+            'bg-yellow-100 text-yellow-700': detalleTrimestre?.estado === 'abierto'
+          }">
+                    <p class="uppercase tracking-wide text-xs opacity-80 mb-1">Estado</p>
+                    <p class="text-lg font-bold">
+                        {{ detalleTrimestre?.estado | titlecase }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Datos generales -->
+            <div class="flex flex-col justify-center md:items-start items-center text-center md:text-left h-full">
+                <h2 class="text-2xl font-extrabold text-indigo-700 tracking-tight mb-3">
+                    Cartilla de Calificaciones
+                </h2>
+
+                <p class="text-gray-800 text-base font-semibold mb-2">
+                    {{ detalleTrimestre?.estudiante }}
+                </p>
+
+                <p class="text-gray-600 text-sm mb-1">
+                    Materia:
+                    <b class="text-indigo-700">{{ detalleTrimestre?.materia }}</b>
+                </p>
+
+                <p class="text-gray-600 text-sm mb-1">
+                    Curso:
+                    <b class="text-indigo-700">{{ detalleTrimestre?.curso }}</b>
+                </p>
+
+                <p class="text-gray-600 text-sm mb-1">
+                    Trimestre <b>{{ numeroTrimestre }}</b>
+                </p>
+
+                <p class="text-gray-600 text-sm">
+                    Docente: <b>{{ detalleTrimestre?.docente }}</b>
+                </p>
+            </div>
+        </div>
+
+        <!-- ESTADO DE CARGA -->
+        <div *ngIf="cargando" class="text-center text-gray-500 py-8">
+            Cargando información...
+        </div>
+
+        <!-- ERROR -->
+        <div *ngIf="error" class="text-center text-red-500 py-8">
+            {{ error }}
+        </div>
+
+        <!-- DETALLE DEL TRIMESTRE -->
+        <div *ngIf="detalleTrimestre && !cargando" class="space-y-8">
+            <div *ngFor="let param of detalleTrimestre?.parametros"
+                class="rounded-2xl overflow-hidden shadow-md border border-gray-100">
+                <div class="bg-indigo-100 px-5 py-3 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-indigo-800">{{ param?.nombre }}</h3>
+                    <span class="text-sm font-medium text-gray-600">
+                        Ponderación: <b>{{ param?.porcentaje }}%</b> |
+                        Promedio: <b class="text-indigo-700">{{ param?.promedio_parametro }}</b>
+                    </span>
+                </div>
+
+                <div class="bg-white p-5">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-700 text-sm uppercase border-b">
+                                <th class="py-3 px-3 text-left">Actividad</th>
+                                <th class="py-3 px-3 text-left">Descripción</th>
+                                <th class="py-3 px-3 text-center">Nota</th>
+                                <th class="py-3 px-3 text-center">Fecha Calificado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let act of param?.actividades" class="border-b hover:bg-indigo-50 transition">
+                                <td class="py-3 px-3 font-medium">{{ act?.nombre }}</td>
+                                <td class="py-3 px-3 text-gray-600">{{ act?.descripcion }}</td>
+                                <td class="py-3 px-3 text-center font-bold text-lg" [ngClass]="{
+                    'text-green-600': act?.nota >= 8,
+                    'text-yellow-600': act?.nota >= 5 && act?.nota < 8,
+                    'text-red-600': act?.nota < 5
+                  }">
+                                    {{ act?.nota !== null ? act?.nota : '—' }}
+                                </td>
+                                <td class="py-3 px-3 text-center text-gray-500">
+                                    {{
+                                    act?.fecha_calificado
+                                    ? (act?.fecha_calificado | date : 'short')
+                                    : 'Pendiente'
+                                    }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <div *ngIf="detalleTrimestre && !cargando" class="text-center mt-10 text-gray-500 text-sm">
+            <p>Emitido automáticamente por el Sistema Escolar</p>
+        </div>
+    </div>
+</div>

@@ -33,7 +33,7 @@ export class CursosasignadosComponent implements OnInit {
       this.usuario = JSON.parse(data);
       this.cargarCursosSegunRol();
     } else {
-      console.warn('⚠️ No se encontró información del usuario en localStorage');
+      console.warn('No se encontró información del usuario en localStorage');
     }
   }
 

@@ -1,24 +1,32 @@
 <app-navbar></app-navbar>
 <div class="min-h-screen bg-gray-50 py-10 px-10">
 
+     <div class="flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
-        <!-- Botón atrás -->
-        <button (click)="irAtras()"
-            class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shadow-sm"
-            title="Volver a trimestres">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                class="w-5 h-5 text-gray-700">
-                <path fill-rule="evenodd"
-                    d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
-                    clip-rule="evenodd" />
-            </svg>
-        </button>
+      <!-- Botón atrás -->
+      <button (click)="irAtras()"
+        class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shadow-sm"
+        title="Volver a cursos">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+          class="w-5 h-5 text-gray-700">
+          <path fill-rule="evenodd"
+            d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
+            clip-rule="evenodd" />
+        </svg>
+      </button>
 
-        <!-- Título -->
-        <h2 class="text-2xl font-bold text-indigo-700">
-            Materias asignadas del curso
-        </h2>
+      <!-- Título -->
+      <h2 class="text-2xl font-bold text-indigo-700">
+        Materias asignadas del curso
+      </h2>
     </div>
+
+    <!-- Botón cerrar curso -->
+    <button (click)="cerrarCurso()"
+      class="bg-red-500 hover:bg-red-600 text-white font-medium px-5 py-2.5 rounded-lg shadow-md transition-all duration-200 active:scale-[0.98]">
+      Cerrar curso
+    </button>
+  </div>
 
     <div *ngIf="materias.length > 0; else noMaterias" class="grid gap-8 mt-6"
         style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
@@ -37,8 +45,6 @@
 
     <!-- Si no hay materias -->
     <ng-template #noMaterias>
-        <div class="text-center text-gray-600 mt-10">
-            <p>No hay materias registradas para este curso.</p>
-        </div>
+   
     </ng-template>
 </div>

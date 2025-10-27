@@ -71,4 +71,9 @@ export class CursosService {
     return this.http.put<any>(url, data);
   }
 
+  getHistorialAsistencia(cursoId: string, estudianteId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/asistencia/historial/${cursoId}/${estudianteId}`);
+  }
+
+
 }

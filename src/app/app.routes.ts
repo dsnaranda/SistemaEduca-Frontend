@@ -15,6 +15,8 @@ import { MateriasasigandasComponent } from './pages/materiasasigandas/materiasas
 import { MateriaTrimestresComponent } from './pages/materia-trimestres/materia-trimestres.component';
 import { AlumnospormateriaComponent } from './pages/alumnospormateria/alumnospormateria.component';
 import { DetallesalumnoComponent } from './pages/detallesalumno/detallesalumno.component';
+import { VerasistenciaalumnoComponent } from './pages/verasistenciaalumno/verasistenciaalumno.component';
+import { CalificacionesComponent } from './pages/calificaciones/calificaciones.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -39,4 +41,6 @@ export const routes: Routes = [
     { path: 'materias/:id/trimestres', component: MateriaTrimestresComponent, canActivate: [authGuard] },
     { path: 'materias/:id/trimestre/:numero/estudiantes', component: AlumnospormateriaComponent },
     { path: 'materias/:id/trimestre/:numero/detalle', component: DetallesalumnoComponent },
+    { path: 'asistencia/estudiante', component: VerasistenciaalumnoComponent, canActivate: [authGuard] },
+    { path: 'calificaciones', component: CalificacionesComponent, canActivate: [authGuard] },
 ];
