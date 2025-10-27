@@ -5,11 +5,12 @@ import { CursosService } from '../../services/server/cursos.service';
 import { MateriasService } from '../../services/server/materias.service';
 import { LoadingHelper } from '../shared/loading.helper';
 import Swal from 'sweetalert2';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-calificaciones',
   standalone: true,
-  imports: [NavbarComponent, CommonModule],
+  imports: [NavbarComponent, CommonModule, RouterModule],
   templateUrl: './calificaciones.component.html',
   styleUrl: './calificaciones.component.css'
 })

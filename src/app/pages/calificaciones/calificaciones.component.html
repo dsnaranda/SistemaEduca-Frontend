@@ -140,15 +140,26 @@
                                                 <p class="text-xs text-gray-500 font-semibold mb-1">Notas por trimestre:
                                                 </p>
                                                 <ul class="text-sm space-y-1">
-                                                    <li *ngFor="let t of m.trimestres" class="flex justify-between">
+                                                    <li *ngFor="let t of m.trimestres"
+                                                        class="flex justify-between items-center">
                                                         <span>Trimestre {{ t.numero }}:</span>
-                                                        <b class="text-indigo-700">{{ t.promedio_trimestre |
-                                                            number:'1.2-2' }}</b>
+                                                        <div class="flex items-center gap-2">
+                                                            <b class="text-indigo-700">{{ t.promedio_trimestre |
+                                                                number:'1.2-2' }}</b>
+
+                                                            <!-- 🔹 Botón dinámico por trimestre -->
+                                                            <a [routerLink]="['/materias', m.materia_id, 'trimestre', t.numero, 'estudiantes']"
+                                                                class="text-[10px] bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold px-2 py-0.5 rounded-md transition-all"
+                                                                title="Ver estudiantes del trimestre {{ t.numero }}">
+                                                                Ver
+                                                            </a>
+                                                        </div>
                                                     </li>
                                                 </ul>
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
                             </td>
                         </tr>
