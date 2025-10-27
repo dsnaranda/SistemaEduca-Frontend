@@ -6,6 +6,9 @@ import { MateriasService } from '../../services/server/materias.service';
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 @Component({
   selector: 'app-alumnospormateria',
@@ -91,13 +94,13 @@ export class AlumnospormateriaComponent implements OnInit {
 
         this.data = res;
         this.cargando = false;
-        Swal.close(); 
+        Swal.close();
       },
       error: (err) => {
         console.error('Error al cargar estudiantes:', err);
         this.error = 'No se pudieron cargar los estudiantes.';
         this.cargando = false;
-        Swal.close(); 
+        Swal.close();
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -331,5 +334,130 @@ export class AlumnospormateriaComponent implements OnInit {
     }
   }
 
+  async imprimirTrimestre(est: any): Promise<void> {
+    try {
+      if (!est.trimestre_id) {
+        Swal.fire('Atención', 'Este estudiante no tiene trimestre creado.', 'info');
+        return;
+      }
+
+      Swal.fire({
+        title: 'Generando reporte...',
+        text: 'Por favor espera unos segundos.',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      // 🔹 Consultar los datos del trimestre directamente
+      const trimestre = await this.materiasService.getTrimestrePorId(est.trimestre_id).toPromise();
+
+      if (!trimestre) {
+        Swal.close();
+        Swal.fire('Error', 'No se pudo obtener la información del trimestre.', 'error');
+        return;
+      }
+
+      const pdf = new jsPDF();
+      const margenIzq = 15;
+      let y = 20;
+
+      // 🔹 Encabezado principal
+      pdf.setFontSize(20);
+      pdf.setTextColor(33, 150, 243);
+      pdf.text('SistemaPDGA', margenIzq, y);
+      y += 10;
+
+      pdf.setFontSize(14);
+      pdf.setTextColor(40, 40, 40);
+      pdf.text('Reporte Individual de Trimestre', margenIzq, y);
+      y += 10;
+
+      // 🔹 Información general
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Materia: ${this.data.materia}`, margenIzq, y); y += 6;
+      pdf.text(`Curso: ${this.data.curso}`, margenIzq, y); y += 6;
+      pdf.text(`Trimestre: ${this.data.trimestre_numero}`, margenIzq, y); y += 6;
+      pdf.text(`Estudiante: ${est.apellidos} ${est.nombres}`, margenIzq, y); y += 6;
+      pdf.text(`Promedio del trimestre: ${est.promedio_trimestre ?? '—'}`, margenIzq, y);
+      y += 10;
+
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margenIzq, y, 195, y);
+      y += 10;
+
+      // 🔹 Parámetros y actividades
+      for (const [index, p] of trimestre.parametros.entries()) {
+        pdf.setFontSize(13);
+        pdf.setTextColor(52, 73, 94);
+        pdf.text(`${index + 1}. ${p.nombre}`, margenIzq, y);
+        y += 6;
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(90, 90, 90);
+        pdf.text(`Porcentaje: ${p.porcentaje}% — Promedio: ${p.promedio_parametro ?? 'No calificado'}`, margenIzq, y);
+        y += 6;
+
+        if (p.actividades && p.actividades.length > 0) {
+          const actividadesTabla = p.actividades.map((a: any, i: number) => [
+            i + 1,
+            a.nombre || 'Sin título',
+            a.descripcion || 'Sin descripción',
+            a.nota !== null ? a.nota.toFixed(2) : '—',
+            new Date(a.fecha_registro).toLocaleDateString(),
+            a.fecha_calificado ? new Date(a.fecha_calificado).toLocaleDateString() : '—'
+          ]);
+
+          autoTable(pdf, {
+            startY: y + 2,
+            head: [['#', 'Actividad', 'Descripción', 'Nota', 'Enviado', 'Calificado']],
+            body: actividadesTabla,
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 2 },
+            headStyles: { fillColor: [63, 81, 181], halign: 'center' },
+            bodyStyles: { halign: 'center' },
+            columnStyles: {
+              1: { halign: 'left', cellWidth: 45 },
+              2: { halign: 'left', cellWidth: 45 },
+            },
+            margin: { left: margenIzq },
+          });
+
+          y = (pdf as any).lastAutoTable.finalY + 10;
+        } else {
+          pdf.setFontSize(10);
+          pdf.text('Sin actividades registradas.', margenIzq + 5, y);
+          y += 10;
+        }
+
+        if (y > 260) {
+          pdf.addPage();
+          y = 20;
+        }
+      }
+
+      // 🔹 Pie del documento
+      const fecha = new Date().toLocaleDateString();
+      pdf.setFontSize(9);
+      pdf.setTextColor(100);
+      pdf.text(`Emitido por SistemaPDGA — ${fecha}`, margenIzq, 285);
+
+      const nombreArchivo = `Trimestre_${this.data.materia}_${est.apellidos}_${est.nombres}.pdf`;
+      pdf.save(nombreArchivo);
+
+      Swal.close();
+      Swal.fire({
+        icon: 'success',
+        title: 'PDF generado correctamente',
+        text: `Archivo: ${nombreArchivo}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      Swal.close();
+      console.error('Error al generar PDF:', error);
+      Swal.fire('Error', 'Ocurrió un problema al generar el PDF.', 'error');
+    }
+  }
 
 }

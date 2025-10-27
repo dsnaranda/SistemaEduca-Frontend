@@ -84,22 +84,36 @@
                                 {{ e.promedio_trimestre !== null ? e.promedio_trimestre : '—' }}
                             </td>
                             <td class="p-3 text-center">
-                                <button *ngIf="e.trimestre_id" (click)="verDetalles(e.trimestre_id)"
-                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-2 mx-auto mb-1"
-                                    [ngClass]="{
+                                <div class="flex justify-center items-center gap-2 flex-wrap">
+                                    <!-- Botón Imprimir -->
+                                    <button *ngIf="e.trimestre_id" (click)="imprimirTrimestre(e)"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm bg-green-600 hover:bg-green-700 text-white transition-all flex items-center gap-2">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                        Imprimir
+                                    </button>
+
+                                    <!-- Botón Ver/Ocultar detalles -->
+                                    <button *ngIf="e.trimestre_id" (click)="verDetalles(e.trimestre_id)"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-2"
+                                        [ngClass]="{
                                                 'bg-indigo-600 hover:bg-indigo-700 text-white': trimestreExpandido !== e.trimestre_id,
                                                 'bg-gray-300 hover:bg-gray-400 text-gray-800': trimestreExpandido === e.trimestre_id
-                                               }">
-                                    <i class="fa-solid" [ngClass]="{
-                      'fa-eye': trimestreExpandido !== e.trimestre_id,
-                      'fa-eye-slash': trimestreExpandido === e.trimestre_id
-                    }"></i>
-                                    {{ trimestreExpandido === e.trimestre_id ? 'Ocultar detalles' : 'Ver detalles' }}
-                                </button>
-                                <span *ngIf="!e.trimestre_id" class="text-gray-400 italic text-xs">
-                                    Sin trimestre
-                                </span>
+                                            }">
+                                                <i class="fa-solid" [ngClass]="{
+                                                'fa-eye': trimestreExpandido !== e.trimestre_id,
+                                                'fa-eye-slash': trimestreExpandido === e.trimestre_id
+                                                }"></i>
+                                        {{ trimestreExpandido === e.trimestre_id ? 'Ocultar detalles' : 'Ver detalles'
+                                        }}
+                                    </button>
+
+                                    <!-- Estado sin trimestre -->
+                                    <span *ngIf="!e.trimestre_id" class="text-gray-400 italic text-xs">
+                                        Sin trimestre
+                                    </span>
+                                </div>
                             </td>
+
                         </tr>
 
                         <!-- Fila expandible -->
