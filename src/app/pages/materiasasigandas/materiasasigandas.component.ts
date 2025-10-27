@@ -4,6 +4,7 @@ import { CursosService } from '../../services/server/cursos.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NavbarComponent } from "../shared/navbar/navbar.component";
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-materiasasigandas',
@@ -27,7 +28,19 @@ export class MateriasasigandasComponent implements OnInit {
 
   ngOnInit(): void {
     this.cursoId = this.route.snapshot.paramMap.get('id')!;
+    this.mostrarCargando();
     this.cargarMaterias();
+  }
+
+  mostrarCargando(): void {
+    Swal.fire({
+      title: 'Cargando materias...',
+      text: 'Por favor espera un momento.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
   }
 
   cargarMaterias() {
@@ -35,6 +48,7 @@ export class MateriasasigandasComponent implements OnInit {
       next: (data) => {
         this.materias = data;
         this.cargando = false;
+        Swal.close();
       },
       error: (err) => {
         this.error = 'Error al cargar las materias';
@@ -46,6 +60,11 @@ export class MateriasasigandasComponent implements OnInit {
 
   abrirMateria(id: string): void {
     this.router.navigate(['/materias', id, 'trimestres']);
+  }
+
+
+  irAtras(): void {
+    this.router.navigate(['/home']);
   }
 
 }

@@ -1,15 +1,33 @@
 <div class="bg-gray-50 flex flex-col items-center py-10 px-4">
     <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-6xl border border-gray-100">
 
-        <!-- 🔹 Encabezado -->
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-extrabold text-gray-800 mb-1">Registro de Asistencia</h2>
-            <p *ngIf="curso" class="text-indigo-700 text-lg font-semibold">
-                {{ curso.curso }} - {{ curso.nivel }}°{{ curso.paralelo }}
-            </p>
+        <!-- Encabezado -->
+        <div class="flex items-center justify-center gap-3 text-center mb-3">
+            <!-- Botón de regreso -->
+            <button (click)="irAtras()"
+                class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shadow-sm"
+                title="Volver a trimestres">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                    class="w-5 h-5 text-gray-700">
+                    <path fill-rule="evenodd"
+                        d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+
+            <!-- Texto principal -->
+            <div>
+                <h2 class="text-2xl font-extrabold text-gray-800 mb-1">
+                    Registro de Asistencia
+                </h2>
+                <p *ngIf="curso" class="text-indigo-700 text-lg font-semibold">
+                    {{ curso.curso }} - {{ curso.nivel }}°{{ curso.paralelo }}
+                </p>
+            </div>
         </div>
 
-        <!-- 🔹 Controles superiores -->
+
+        <!-- Controles superiores -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mb-5">
             <!-- Fecha -->
             <div class="flex items-center gap-2" *ngIf="!modoAnalitico">
@@ -41,7 +59,7 @@
             </div>
         </div>
 
-        <!-- 🔹 Tabla principal -->
+        <!-- Tabla principal -->
         <form *ngIf="estudiantesForm" [formGroup]="estudiantesForm" (ngSubmit)="guardarAsistencia()">
             <div formArrayName="estudiantes" class="overflow-hidden border border-gray-200 rounded-xl">
                 <table class="min-w-full border-collapse">
@@ -68,11 +86,11 @@
                             <!-- Estado actual -->
                             <td class="p-3 text-center">
                                 <span [ngClass]="{
-                  'text-green-600 font-semibold': est.value.estado === 'Presente',
-                  'text-red-600 font-semibold': est.value.estado === 'Ausente',
-                  'text-blue-600 font-semibold italic': est.value.estado === 'Justificado',
-                  'text-gray-400 italic': !est.value.estado
-                }">
+                                    'text-green-600 font-semibold': est.value.estado === 'Presente',
+                                    'text-red-600 font-semibold': est.value.estado === 'Ausente',
+                                    'text-blue-600 font-semibold italic': est.value.estado === 'Justificado',
+                                    'text-gray-400 italic': !est.value.estado
+                                    }">
                                     {{ est.value.estado || '—' }}
                                 </span>
                             </td>
@@ -101,7 +119,7 @@
                 </table>
             </div>
 
-            <!-- 🔹 Botones -->
+            <!-- Botones -->
             <div class="flex justify-end items-center gap-3 mt-8">
                 <!-- Normal -->
                 <button *ngIf="!modoJustificar" type="button"

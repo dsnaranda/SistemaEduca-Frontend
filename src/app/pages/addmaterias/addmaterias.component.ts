@@ -308,4 +308,8 @@ export class AddmateriasComponent implements OnInit {
 
     event.target.value = '';
   }
+
+  irAtras(): void {
+      this.router.navigate(['/addcursos']);
+  }
 }

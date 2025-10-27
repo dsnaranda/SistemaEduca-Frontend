@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormArray, FormGroup } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
@@ -31,7 +31,8 @@ export class RegistrarAsistenciaComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private cursosService: CursosService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -45,7 +46,7 @@ export class RegistrarAsistenciaComponent implements OnInit {
     return this.estudiantesForm.get('estudiantes') as FormArray;
   }
 
-  // 🔹 CARGAR ASISTENCIA NORMAL POR FECHA
+  // CARGAR ASISTENCIA NORMAL POR FECHA
   cargarAsistenciaPorFecha(): void {
     LoadingHelper.mostrar('Cargando asistencia...');
 
@@ -69,7 +70,7 @@ export class RegistrarAsistenciaComponent implements OnInit {
                 apellidos: [est.apellidos],
                 presente: [est.estado === 'Presente'],
                 estado: [est.estado || null],
-                justificar: [false]   // ✅ Añadimos este campo SIEMPRE
+                justificar: [false]   // Añadimos este campo SIEMPRE
               })
             )
           ),
@@ -84,7 +85,7 @@ export class RegistrarAsistenciaComponent implements OnInit {
     });
   }
 
-  // 🔹 ACTUALIZAR ESTADO EN TIEMPO REAL
+  // ACTUALIZAR ESTADO EN TIEMPO REAL
   actualizarEstado(control: any): void {
     const est = control as FormGroup;
     est.patchValue({
@@ -92,7 +93,7 @@ export class RegistrarAsistenciaComponent implements OnInit {
     });
   }
 
-  // 🔹 FILTRO NORMAL POR ESTADO
+  // FILTRO NORMAL POR ESTADO
   aplicarFiltro(): void {
     if (this.filtroEstado === 'Todos') {
       this.setEstudiantes(this.estudiantesOriginal);
@@ -274,7 +275,7 @@ export class RegistrarAsistenciaComponent implements OnInit {
       this.cursosService
         .actualizarAsistencia({
           curso_id: this.cursoId,
-          fecha, 
+          fecha,
           estudiantes: gruposPorFecha[fecha],
         })
         .pipe(
@@ -397,6 +398,10 @@ export class RegistrarAsistenciaComponent implements OnInit {
         },
       });
     });
+  }
+
+  irAtras(): void {
+    this.router.navigate(['/asistencia']);
   }
 
 }

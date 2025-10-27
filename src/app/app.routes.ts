@@ -13,6 +13,8 @@ import { LosspassComponent } from './auth/losspass/losspass.component';
 import { ChangepassComponent } from './auth/changepass/changepass.component';
 import { MateriasasigandasComponent } from './pages/materiasasigandas/materiasasigandas.component';
 import { MateriaTrimestresComponent } from './pages/materia-trimestres/materia-trimestres.component';
+import { AlumnospormateriaComponent } from './pages/alumnospormateria/alumnospormateria.component';
+import { DetallesalumnoComponent } from './pages/detallesalumno/detallesalumno.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -34,5 +36,7 @@ export const routes: Routes = [
         ],
     },
     { path: 'materias/:id', component: MateriasasigandasComponent, canActivate: [authGuard] },
-    { path: 'materias/:id/trimestres', component: MateriaTrimestresComponent, canActivate: [authGuard] }
+    { path: 'materias/:id/trimestres', component: MateriaTrimestresComponent, canActivate: [authGuard] },
+    { path: 'materias/:id/trimestre/:numero/estudiantes', component: AlumnospormateriaComponent },
+    { path: 'materias/:id/trimestre/:numero/detalle', component: DetallesalumnoComponent },
 ];

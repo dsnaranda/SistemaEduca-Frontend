@@ -311,4 +311,8 @@ export class AddestudiantesComponent implements OnInit {
     });
   }
 
+  irAtras(): void {
+    this.router.navigate(['/addcursos']);
+  }
+
 }

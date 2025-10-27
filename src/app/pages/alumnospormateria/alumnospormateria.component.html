@@ -1,0 +1,245 @@
+<app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
+
+<div class="bg-gray-50 min-h-screen pt-20 px-8 pb-12">
+    <div *ngIf="error" class="text-center mt-20 text-red-600">
+        {{ error }}
+    </div>
+
+    <div *ngIf="!cargando && data" class="max-w-6xl mx-auto">
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <!-- Botón atrás -->
+                <button (click)="irAtras()"
+                    class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shadow-sm"
+                    title="Volver a trimestres">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                        class="w-5 h-5 text-gray-700">
+                        <path fill-rule="evenodd"
+                            d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                <!-- Título -->
+                <h2 class="text-2xl font-bold text-indigo-700">
+                    {{ data.materia }} — {{ data.curso }}
+                    <span class="block text-lg text-gray-600 font-medium mt-1">
+                        Trimestre {{ data.trimestre_numero }}
+                    </span>
+                </h2>
+            </div>
+
+
+            <!-- Botones -->
+            <div class="flex gap-3">
+                <button (click)="abrirModal()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl shadow-md flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar tarea
+                </button>
+
+                <button (click)="cerrarCartillas()"
+                    class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-xl shadow-md flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-check-to-slot"></i> Cerrar cartillas
+                </button>
+            </div>
+        </div>
+
+        <p class="text-center mb-5 text-gray-700">
+            Total estudiantes: <b>{{ data.total_estudiantes_curso }}</b> |
+            Creados: <b>{{ data.total_trimestres_creados }}</b> |
+            Faltantes: <b class="text-red-500">{{ data.total_faltantes }}</b>
+        </p>
+
+        <!-- Tabla -->
+        <div class="overflow-x-auto shadow-md rounded-2xl bg-white">
+            <table class="w-full border-collapse text-sm">
+                <thead class="bg-indigo-600 text-white">
+                    <tr>
+                        <th class="p-3 text-left">#</th>
+                        <th class="p-3 text-left">Apellidos</th>
+                        <th class="p-3 text-left">Nombres</th>
+                        <th class="p-3 text-center">Estado</th>
+                        <th class="p-3 text-center">Promedio</th>
+                        <th class="p-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ng-container *ngFor="let e of data.estudiantes; let i = index">
+                        <tr class="hover:bg-indigo-50 transition-all">
+                            <td class="p-3">{{ i + 1 }}</td>
+                            <td class="p-3 font-medium text-gray-800">{{ e.apellidos }}</td>
+                            <td class="p-3 font-medium text-gray-800">{{ e.nombres }}</td>
+                            <td class="p-3 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="{
+                                    'bg-green-100 text-green-700': e.estado === 'cerrado',
+                                    'bg-yellow-100 text-yellow-700': e.estado === 'abierto',
+                                    'bg-red-100 text-red-700': e.estado === 'no creado'
+                                    }">
+                                    {{ e.estado | titlecase }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                {{ e.promedio_trimestre !== null ? e.promedio_trimestre : '—' }}
+                            </td>
+                            <td class="p-3 text-center">
+                                <button *ngIf="e.trimestre_id" (click)="verDetalles(e.trimestre_id)"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-2 mx-auto mb-1"
+                                    [ngClass]="{
+                                                'bg-indigo-600 hover:bg-indigo-700 text-white': trimestreExpandido !== e.trimestre_id,
+                                                'bg-gray-300 hover:bg-gray-400 text-gray-800': trimestreExpandido === e.trimestre_id
+                                               }">
+                                    <i class="fa-solid" [ngClass]="{
+                      'fa-eye': trimestreExpandido !== e.trimestre_id,
+                      'fa-eye-slash': trimestreExpandido === e.trimestre_id
+                    }"></i>
+                                    {{ trimestreExpandido === e.trimestre_id ? 'Ocultar detalles' : 'Ver detalles' }}
+                                </button>
+                                <span *ngIf="!e.trimestre_id" class="text-gray-400 italic text-xs">
+                                    Sin trimestre
+                                </span>
+                            </td>
+                        </tr>
+
+                        <!-- Fila expandible -->
+                        <tr *ngIf="trimestreExpandido === e.trimestre_id">
+                            <td colspan="6" class="bg-gray-50 border-t border-gray-200 p-4">
+                                <div *ngIf="!detallesTrimestre[e.trimestre_id]" class="text-gray-500 text-sm italic">
+                                    Cargando detalles...
+                                </div>
+
+                                <div *ngIf="detallesTrimestre[e.trimestre_id]"
+                                    class="space-y-3 transition-all duration-300">
+                                    <h4 class="text-indigo-700 font-semibold mb-2">
+                                        Parámetros de {{ detallesTrimestre[e.trimestre_id].materia }}
+                                    </h4>
+
+                                    <div *ngFor="let p of detallesTrimestre[e.trimestre_id].parametros"
+                                        class="border border-gray-200 rounded-xl p-3 bg-white shadow-sm hover:shadow-md transition-all">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="font-semibold text-gray-800">{{ p.nombre }}</span>
+                                            <span class="text-sm text-gray-500">({{ p.porcentaje }}%)</span>
+                                        </div>
+
+                                        <p class="text-sm text-gray-600">
+                                            Promedio:
+                                            <b [ngClass]="{
+                                                'text-green-600': p.promedio_parametro !== null,
+                                                'text-red-500': p.promedio_parametro === null
+                                                }">
+                                                {{ p.promedio_parametro !== null ? (p.promedio_parametro |
+                                                number:'1.2-2') : 'No calificado' }}
+                                            </b>
+                                        </p>
+
+                                        <div class="mt-2">
+                                            <span class="text-xs text-gray-500">Actividades:</span>
+                                            <ul class="list-none space-y-2 text-sm text-gray-700">
+                                                <li *ngFor="let act of p.actividades"
+                                                    class="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+
+                                                    <!-- Información de la actividad -->
+                                                    <div class="flex justify-between items-start">
+                                                        <div>
+                                                            <b>{{ act.nombre }}</b> — {{ act.descripcion || 'Sin
+                                                            descripción' }}
+                                                            <div class="text-xs text-gray-500 mt-1">
+                                                                Enviado: {{ act.fecha_registro | date:'short' }} |
+                                                                Calificado: {{ act.fecha_calificado ?
+                                                                (act.fecha_calificado | date:'short') : '—' }}
+                                                            </div>
+                                                        </div>
+
+                                                        <span *ngIf="act.nota !== null"
+                                                            class="text-green-700 font-semibold text-sm">
+                                                            Calificada
+                                                        </span>
+
+                                                    </div>
+
+                                                    <!-- Zona de calificación -->
+                                                    <div class="flex items-center gap-3 mt-1">
+                                                        <!-- Input de nota -->
+                                                        <input type="number" min="0" max="10" step="0.1"
+                                                            [(ngModel)]="notas[act._id]"
+                                                            [disabled]="act.nota !== null && !edicionActiva[act._id]"
+                                                            [placeholder]="act.nota !== null ? act.nota : 'Nota'"
+                                                            [class.animate-pulse]="!edicionActiva[act._id] && act.nota !== null"
+                                                            class="w-20 border border-gray-300 rounded-lg px-2 py-1 text-sm text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all" />
+
+                                                        <!-- Botón principal -->
+                                                        <button *ngIf="!act.nota || edicionActiva[act._id]"
+                                                            (click)="calificarActividad(act._id, notas[act._id])"
+                                                            [disabled]="!notas[act._id]"
+                                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg shadow-sm transition-all"
+                                                            [ngClass]="{
+                                                             'bg-indigo-600 hover:bg-indigo-700 text-white': notas[act._id],
+                                                                'bg-gray-300 text-gray-500 cursor-not-allowed': !notas[act._id]
+                                                              }">
+                                                            {{ act.nota !== null && edicionActiva[act._id] ? 'Guardar' :
+                                                            'Calificar' }}
+                                                        </button>
+
+                                                        <!-- Botón para habilitar edición -->
+                                                        <button *ngIf="act.nota !== null && !edicionActiva[act._id]"
+                                                            (click)="habilitarEdicion(act._id)"
+                                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white shadow-sm transition-all">
+                                                            Recalificar
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            </ul>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal de envío de tarea -->
+    <div *ngIf="mostrarModal" class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+        <div class="bg-white rounded-2xl shadow-lg w-full max-w-lg p-6 relative">
+            <h3 class="text-xl font-bold text-indigo-700 mb-4 text-center">
+                Enviar nueva tarea
+            </h3>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Parámetro</label>
+                <select [(ngModel)]="nuevaTarea.parametro"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Selecciona un parámetro</option>
+                    <option *ngFor="let p of parametrosDisponibles" [value]="p">{{ p }}</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Nombre</label>
+                <input [(ngModel)]="nuevaTarea.nombre" type="text" placeholder="Ej. Tarea de lectura"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">Descripción</label>
+                <textarea [(ngModel)]="nuevaTarea.descripcion" rows="3" placeholder="Describe brevemente la tarea"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-5">
+                <button (click)="cerrarModal()"
+                    class="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold transition-all">
+                    Cancelar
+                </button>
+                <button (click)="enviarTarea()"
+                    class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all">
+                    Confirmar envío
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

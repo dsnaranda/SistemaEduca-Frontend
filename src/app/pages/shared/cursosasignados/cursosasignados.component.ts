@@ -37,10 +37,6 @@ export class CursosasignadosComponent implements OnInit {
     }
   }
 
-  /**
-   * Determina si el usuario es docente o estudiante
-   * y carga los cursos correspondientes.
-   */
   cargarCursosSegunRol(): void {
     if (!this.usuario) return;
 
@@ -88,7 +84,7 @@ export class CursosasignadosComponent implements OnInit {
 
   abrirCurso(id: string): void {
     if (this.usuario?.rol === 'estudiante') {
-      // 🔹 Si es estudiante, lo redirigimos a ver sus materias (no asistencia)
+      // Si es estudiante, lo redirigimos a ver sus materias (no asistencia)
       this.router.navigate(['/materias', id]);
       return;
     }
@@ -99,4 +95,5 @@ export class CursosasignadosComponent implements OnInit {
       this.router.navigate(['/asistencia/registrar', id]);
     }
   }
+
 }
