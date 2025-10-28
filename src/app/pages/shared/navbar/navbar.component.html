@@ -75,10 +75,16 @@
         </svg>
 
         <!-- Nombre del sistema -->
-        <h1 *ngIf="usuario?.rol === 'docente'; else sinAccion" (click)="goTo('/dashboard')"
-            class="text-xl font-bold cursor-pointer hover:text-indigo-200 transition select-none">
-            Sistema PDGA
-        </h1>
+        <div class="flex flex-col leading-tight">
+            <h1 *ngIf="usuario?.rol === 'docente'; else sinAccion" (click)="goTo('/dashboard')"
+                class="text-xl font-bold cursor-pointer hover:text-indigo-200 transition select-none">
+                Sistema PDGA
+            </h1>
+            <span *ngIf="usuario?.rol === 'docente'"
+                class="text-[11px] text-indigo-200/80 group-hover:text-indigo-100 transition">
+                Dashboard
+            </span>
+        </div>
 
         <ng-template #sinAccion>
             <h1 class="text-xl font-bold select-none cursor-default">
