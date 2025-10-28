@@ -1,0 +1,167 @@
+<app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
+
+<div class="min-h-[85vh] bg-gradient-to-br from-indigo-50 to-white flex flex-col items-center py-10 px-4 mt-8">
+    <div class="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-6xl border border-gray-100">
+
+        <!-- LISTA DE CURSOS -->
+        <div *ngIf="!cursoSeleccionado && !error && !cargando">
+            <h2 class="text-2xl md:text-3xl font-bold text-indigo-700 mb-8 text-center">
+                Mis cursos asignados:
+            </h2>
+
+            <div *ngIf="cursos.length > 0; else noCursos" class="grid gap-8"
+                style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+                <!-- Tarjetas de cursos -->
+                <div *ngFor="let curso of cursos" (click)="verCartilla(curso.id || curso._id)"
+                    class="cursor-pointer border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all flex flex-col justify-between hover:bg-indigo-50">
+
+                    <p class="text-xl font-semibold text-gray-800 mb-3 text-center">
+                        {{ curso.nombre }} - {{ curso.nivel }}°{{ curso.paralelo }}
+                    </p>
+
+                    <div class="text-sm text-gray-600 space-y-2 text-center">
+                        <p>Materias: {{ curso.total_materias || 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Si no hay cursos -->
+            <ng-template #noCursos>
+                <div class="flex justify-center items-center">
+                    <div class="border border-gray-200 bg-white rounded-2xl shadow-md p-8 max-w-md text-center">
+                        <p class="text-2xl font-semibold text-gray-700 mb-2">No estás inscrito en ningún curso</p>
+                        <p class="text-gray-500 text-sm">
+                            Aún no tienes cursos asignados.<br>
+                            Contacta a tu docente o administrador para recibir una asignación.
+                        </p>
+                    </div>
+                </div>
+            </ng-template>
+        </div>
+
+
+        <!-- ============================
+         CARGANDO / ERROR
+    ============================ -->
+        <div *ngIf="cargando" class="text-center text-gray-500 py-10 text-lg">Cargando información...</div>
+        <div *ngIf="error" class="text-center text-red-600 py-10 text-lg">{{ error }}</div>
+
+        <!-- ============================
+         CARTILLA DEL ESTUDIANTE
+    ============================ -->
+        <div *ngIf="cursoSeleccionado && !cargando && !error" class="space-y-8">
+
+            <!-- Encabezado del curso -->
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-4">
+                    <button (click)="irAtras()"
+                        class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shadow-sm"
+                        title="Volver">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-indigo-700">
+                            {{ cursoSeleccionado?.nombre }} - {{ cursoSeleccionado?.nivel }}°{{
+                            cursoSeleccionado?.paralelo }}
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de cards: 1) Promedio+Estado  2..N) Materias -->
+            <ng-container *ngFor="let est of cartilla">
+                <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+                    <!-- CARD 1: Promedio + Estado -->
+                    <div
+                        class="bg-white rounded-2xl border border-gray-100 shadow-md p-6 flex flex-col justify-between">
+                        <div>
+                            <p class="uppercase text-xs font-semibold tracking-wide text-indigo-700/80 mb-2">
+                                Resumen del Estudiante
+                            </p>
+                            <h3 class="text-xl font-bold text-gray-800 break-words">
+                                {{ est.apellidos }} {{ est.nombres }}
+                            </h3>
+                        </div>
+
+                        <div class="mt-6">
+                            <div class="bg-indigo-600 text-white rounded-xl p-5 text-center shadow">
+                                <p class="uppercase text-xs font-semibold tracking-wide opacity-90 mb-1">
+                                    Promedio Final del Curso
+                                </p>
+                                <p class="text-4xl font-extrabold">
+                                    {{ est.promedio_curso | number:'1.2-2' }}
+                                </p>
+                            </div>
+
+                            <div class="mt-4 w-full py-3 px-4 rounded-xl text-center font-semibold shadow-sm" [ngClass]="{
+                 'bg-green-100 text-green-700': est.estado === 'Aprobado',
+                 'bg-red-100 text-red-700': est.estado === 'Reprobado'
+               }">
+                                <span class="uppercase tracking-wide text-xs">Estado</span>
+                                <div class="text-lg font-bold mt-1">{{ est.estado }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARDS DE MATERIAS (tantos como existan) -->
+                    <div *ngFor="let m of est.detalle_materias"
+                        class="bg-white rounded-2xl border border-gray-100 shadow-md overflow-hidden flex flex-col">
+                        <!-- Encabezado de la materia -->
+                        <div class="bg-indigo-100 px-5 py-4 flex items-start justify-between gap-3">
+                            <h4 class="text-base md:text-lg font-semibold text-indigo-900 leading-snug break-words">
+                                {{ m.materia_nombre }}
+                            </h4>
+                            <span class="text-sm font-medium text-gray-700 whitespace-nowrap">
+                                Promedio:
+                                <b class="text-indigo-700">{{ m.promedio_materia | number:'1.2-2' }}</b>
+                            </span>
+                        </div>
+
+                        <!-- Tabla de trimestres -->
+                        <div class="p-5">
+                            <div class="overflow-x-auto">
+                                <table class="w-full border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-700 text-xs md:text-sm uppercase border-b">
+                                            <th class="py-3 px-3 text-left">Trimestre</th>
+                                            <th class="py-3 px-3 text-center">Promedio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let t of m.trimestres"
+                                            class="border-b hover:bg-indigo-50 transition">
+                                            <td class="py-3 px-3 font-medium">Trimestre {{ t.numero }}</td>
+                                            <td class="py-3 px-3 text-center text-indigo-700 font-bold">
+                                                {{ t.promedio_trimestre | number:'1.2-2' }}
+                                            </td>
+                                        </tr>
+
+                                        <!-- Si no hay trimestres -->
+                                        <tr *ngIf="!m.trimestres || m.trimestres.length === 0">
+                                            <td colspan="2" class="py-4 px-3 text-center text-gray-500">
+                                                Sin trimestres registrados.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /fin cards de materias -->
+
+                </div>
+            </ng-container>
+
+            <!-- Pie -->
+            <div class="text-center mt-4 text-gray-500 text-sm">
+                <p>Emitido automáticamente por el Sistema Escolar</p>
+            </div>
+        </div>
+    </div>
+</div>

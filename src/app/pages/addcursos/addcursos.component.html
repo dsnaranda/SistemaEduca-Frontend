@@ -1,6 +1,6 @@
-<app-navbar></app-navbar>
+<app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
 
-<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-8">
+<div class="min-h-[85vh] bg-gray-50 flex flex-col items-center py-8 pt-24">
 
     <!-- Contenedor principal -->
     <div class="w-full lg:w-[90%] xl:w-[80%] px-4 space-y-8">
@@ -62,7 +62,7 @@
         </div>
 
         <!-- Selector de vista -->
-        <div class="flex justify-end mb-4">
+        <div class="flex justify-end mb-1">
             <select [(ngModel)]="modoVista" (change)="cambiarVista()"
                 class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="mis">Mis cursos asignados</option>

@@ -18,6 +18,7 @@ import { DetallesalumnoComponent } from './pages/detallesalumno/detallesalumno.c
 import { VerasistenciaalumnoComponent } from './pages/verasistenciaalumno/verasistenciaalumno.component';
 import { CalificacionesComponent } from './pages/calificaciones/calificaciones.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { VernotasestudianteComponent } from './pages/vernotasestudiante/vernotasestudiante.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -45,4 +46,6 @@ export const routes: Routes = [
     { path: 'asistencia/estudiante', component: VerasistenciaalumnoComponent, canActivate: [authGuard] },
     { path: 'calificaciones', component: CalificacionesComponent, canActivate: [authGuard] },
     { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+    { path: 'notas-personales', component: VernotasestudianteComponent, canActivate: [authGuard] },
+
 ];

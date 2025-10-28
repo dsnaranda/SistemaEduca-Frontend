@@ -20,6 +20,7 @@ export class MateriasasigandasComponent implements OnInit {
   cursoId!: string;
   cargando: boolean = true;
   error: string = '';
+  usuario: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -30,6 +31,10 @@ export class MateriasasigandasComponent implements OnInit {
 
   ngOnInit(): void {
     this.cursoId = this.route.snapshot.paramMap.get('id')!;
+    const data = localStorage.getItem('usuario');
+    if (data) {
+      this.usuario = JSON.parse(data);
+    }
     this.mostrarCargando();
     this.cargarMaterias();
   }
@@ -51,14 +56,26 @@ export class MateriasasigandasComponent implements OnInit {
         this.materias = data;
         this.cargando = false;
         Swal.close();
+
+        // Si no hay materias, también cerramos el swal y mostramos un aviso
+        if (!data || data.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Sin materias asignadas',
+            text: 'Este curso aún no tiene materias registradas.',
+            confirmButtonColor: '#4F46E5'
+          });
+        }
       },
       error: (err) => {
         this.error = 'Error al cargar las materias';
         console.error(err);
         this.cargando = false;
+        Swal.close();
       }
     });
   }
+
 
   abrirMateria(id: string): void {
     this.router.navigate(['/materias', id, 'trimestres']);

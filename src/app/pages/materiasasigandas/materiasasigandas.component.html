@@ -1,14 +1,13 @@
-<app-navbar></app-navbar>
-<div class="min-h-screen bg-gray-50 py-10 px-10">
+<app-navbar class="fixed top-0 left-0 w-full z-50 shadow-md"></app-navbar>
 
-     <div class="flex items-center justify-between gap-3">
+<div class="min-h-screen bg-gray-50 py-10 px-10 pt-24">
+  <div class="flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <!-- Botón atrás -->
       <button (click)="irAtras()"
         class="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all shadow-sm"
         title="Volver a cursos">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-          class="w-5 h-5 text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-gray-700">
           <path fill-rule="evenodd"
             d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
             clip-rule="evenodd" />
@@ -22,29 +21,49 @@
     </div>
 
     <!-- Botón cerrar curso -->
-    <button (click)="cerrarCurso()"
+    <button *ngIf="usuario?.rol === 'docente'" (click)="cerrarCurso()"
       class="bg-red-500 hover:bg-red-600 text-white font-medium px-5 py-2.5 rounded-lg shadow-md transition-all duration-200 active:scale-[0.98]">
       Cerrar curso
     </button>
   </div>
 
-    <div *ngIf="materias.length > 0; else noMaterias" class="grid gap-8 mt-6"
-        style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-        <div *ngFor="let materia of materias" (click)="abrirMateria(materia._id)"
-            class="cursor-pointer border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all flex flex-col justify-between hover:bg-indigo-50">
-            <p class="text-xl font-semibold text-gray-800 mb-3 text-center">
-                {{ materia.nombre }}
-            </p>
+  <div *ngIf="materias.length > 0; else noMaterias" class="grid gap-8 mt-6"
+    style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+    <div *ngFor="let materia of materias" (click)="abrirMateria(materia._id)"
+      class="cursor-pointer border border-gray-200 rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all flex flex-col justify-between hover:bg-indigo-50">
+      <p class="text-xl font-semibold text-gray-800 mb-3 text-center">
+        {{ materia.nombre }}
+      </p>
 
-            <div class="text-sm text-gray-600 space-y-2 text-center">
-                <p>Descripción: {{ materia.descripcion }}</p>
-            </div>
-        </div>
-
+      <div class="text-sm text-gray-600 space-y-2 text-center">
+        <p>Descripción: {{ materia.descripcion }}</p>
+      </div>
     </div>
 
-    <!-- Si no hay materias -->
-    <ng-template #noMaterias>
-   
-    </ng-template>
+  </div>
+
+  <!-- Si no hay materias -->
+  <ng-template #noMaterias>
+    <div class="flex justify-center items-center mt-5">
+      <div class="border border-gray-200 bg-white rounded-2xl shadow-md p-8 max-w-md text-center">
+        <!-- Texto principal -->
+        <p class="text-2xl font-semibold text-gray-700 mb-2">
+          {{ usuario?.rol === 'docente' ? 'No tienes materias registradas en este curso' : 'Aún no hay materias disponibles' }}
+        </p>
+        <!-- Mensaje informativo -->
+        <p class="text-gray-500 text-sm">
+          <ng-container *ngIf="usuario?.rol === 'docente'; else mensajeEstudiante">
+            Este curso no tiene materias creadas todavía.<br>
+            Puedes añadir materias desde la sección de administración.
+          </ng-container>
+          <ng-template #mensajeEstudiante>
+            Tu docente aún no ha registrado las materias de este curso.<br>
+            Por favor, vuelve más tarde para revisarlas.
+          </ng-template>
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+
 </div>
