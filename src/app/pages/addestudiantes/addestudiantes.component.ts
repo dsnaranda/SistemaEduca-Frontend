@@ -79,7 +79,7 @@ export class AddestudiantesComponent implements OnInit {
   }
 
   crearEstudiante(): FormGroup {
-    return this.fb.group({
+    const grupo = this.fb.group({
       nombres: ['', Validators.required],
       apellidos: ['', Validators.required],
       ci: [
@@ -98,9 +98,15 @@ export class AddestudiantesComponent implements OnInit {
           Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
         ],
       ],
-      password: ['automatica'],
+      password: [''], 
     });
+    grupo.get('ci')?.valueChanges.subscribe((ciValue) => {
+      grupo.get('password')?.setValue(ciValue || '', { emitEvent: false });
+    });
+
+    return grupo;
   }
+
 
   onInputChange(estudiante: AbstractControl, campo: string): void {
     const grupo = estudiante as FormGroup;

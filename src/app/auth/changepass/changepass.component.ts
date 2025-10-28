@@ -18,15 +18,20 @@ export class ChangepassComponent implements OnInit {
   passwordForm!: FormGroup;
   isPasswordVisible = false;
   changedata: any = { id: '', correo: '' };
+  isAuthenticated = false;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private loginService: LoginService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    // Verificar autenticación (igual que en el guard)
+    const token = localStorage.getItem('token');
+    this.isAuthenticated = !!token;
+
     // Obtener el ID de la URL
     const userId = this.route.snapshot.paramMap.get('id');
     this.changedata.id = userId;
@@ -41,7 +46,7 @@ export class ChangepassComponent implements OnInit {
 
     // Crear formulario reactivo
     this.passwordForm = this.fb.group({
-      clave: ['', [Validators.required, Validators.minLength(6)]],
+      clave: ['', [Validators.required]],
       confirmarclave: ['', [Validators.required]]
     });
   }

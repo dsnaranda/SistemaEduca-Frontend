@@ -136,7 +136,7 @@ export class AddcursosComponent implements OnInit {
               text: res.mensaje || 'El curso ha sido registrado exitosamente.',
               confirmButtonText: 'Aceptar'
             }).then(() => {
-              // Reset completo del formulario (incluye el combo)
+              // Reset completo del formulario 
               this.cursoForm.reset({
                 nombre: '',
                 nivel: '',

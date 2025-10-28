@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -19,6 +19,7 @@ export class NavbarComponent implements OnInit {
     const data = localStorage.getItem('usuario');
     if (data) {
       this.usuario = JSON.parse(data);
+       console.log('👤 Usuario cargado desde localStorage:', this.usuario);
     }
   }
 
@@ -42,5 +43,13 @@ export class NavbarComponent implements OnInit {
   logout(): void {
     localStorage.clear();
     this.router.navigate(['/login']);
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickOutside(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.relative')) {
+      this.isMenuOpen = false;
+    }
   }
 }

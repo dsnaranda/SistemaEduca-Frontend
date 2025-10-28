@@ -98,7 +98,7 @@
             </button>
 
             <!-- Volver al login -->
-            <p class="text-center text-sm text-gray-600 mt-3">
+            <p *ngIf="!isAuthenticated" class="text-center text-sm text-gray-600 mt-3">
                 ¿Ya tienes una cuenta?
                 <a routerLink="/login" class="text-indigo-600 hover:underline font-semibold">
                     Inicia sesión

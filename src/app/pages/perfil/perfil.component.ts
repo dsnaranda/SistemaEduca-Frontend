@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from "../shared/navbar/navbar.component";
+import { ChangepassComponent } from "../../auth/changepass/changepass.component";
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [CommonModule, NavbarComponent], 
+  imports: [CommonModule, NavbarComponent, ChangepassComponent], 
   templateUrl: './perfil.component.html',
   styleUrls: ['./perfil.component.css']
 })

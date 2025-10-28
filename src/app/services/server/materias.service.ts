@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class MateriasService {
-  private readonly useLocal = false;
+  private readonly useLocal = true;
   private readonly baseUrl = this.useLocal
     ? 'http://localhost:3001'
     : 'https://api-sistema-escolar.vercel.app';
