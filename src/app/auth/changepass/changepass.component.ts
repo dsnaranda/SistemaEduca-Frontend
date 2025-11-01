@@ -28,23 +28,45 @@ export class ChangepassComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Verificar autenticación (igual que en el guard)
+    // Verificar autenticación (solo para mostrar si hay sesión)
     const token = localStorage.getItem('token');
     this.isAuthenticated = !!token;
 
-    // Obtener el ID de la URL
+    // Obtener el ID desde la URL (caso enlace)
     const userId = this.route.snapshot.paramMap.get('id');
     this.changedata.id = userId;
 
     console.log('ID obtenido desde la URL:', userId);
 
-    // Obtener correo guardado
-    const correo = localStorage.getItem('correo_recuperacion');
-    if (correo) {
-      this.changedata.correo = correo;
+    // Detectar si está en la ruta /perfil (sin id)
+    if (!userId) {
+      const userData = localStorage.getItem('usuario');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          this.changedata.id = user._id || user.id;
+          this.changedata.correo = user.correo;
+          console.log('Cambio de contraseña desde PERFIL, id:', this.changedata.id);
+        } catch (error) {
+          console.error('Error al leer usuario del localStorage:', error);
+          Swal.fire('Error', 'No se pudo obtener la información del usuario.', 'error');
+          this.router.navigate(['/login']);
+          return;
+        }
+      } else {
+        Swal.fire('Error', 'Debe iniciar sesión para cambiar su contraseña.', 'error');
+        this.router.navigate(['/login']);
+        return;
+      }
+    } else {
+      // Si viene de enlace (changepass/:id)
+      const correo = localStorage.getItem('correo_recuperacion');
+      if (correo) {
+        this.changedata.correo = correo;
+      }
     }
 
-    // Crear formulario reactivo
+    // Crear formulario
     this.passwordForm = this.fb.group({
       clave: ['', [Validators.required]],
       confirmarclave: ['', [Validators.required]]
@@ -68,10 +90,6 @@ export class ChangepassComponent implements OnInit {
       Swal.fire('Error', 'Las contraseñas no coinciden.', 'error');
       return;
     }
-
-    // Mostrar los datos en consola para verificación
-    console.log('ID del usuario:', this.changedata.id);
-    console.log('Nueva contraseña ingresada:', clave);
 
     Swal.fire({
       title: 'Confirmar cambio de contraseña',
@@ -99,17 +117,28 @@ export class ChangepassComponent implements OnInit {
     this.loginService.cambiarContrasena(this.changedata.id, clave).subscribe({
       next: (res: any) => {
         Swal.close();
-        console.log('✅ Respuesta del servidor:', res);
+        console.log('Respuesta del servidor:', res);
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Contraseña actualizada',
-          text: 'Tu contraseña se cambió correctamente. Ahora puedes iniciar sesión.',
-          confirmButtonColor: '#4F46E5'
-        }).then(() => {
-          localStorage.removeItem('validacion_id');
-          this.router.navigate(['/login']);
-        });
+        // Si viene desde PERFIL, no redirigimos al login
+        if (!this.route.snapshot.paramMap.get('id')) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Contraseña actualizada',
+            text: 'Tu contraseña ha sido cambiada correctamente.',
+            confirmButtonColor: '#4F46E5'
+          });
+        } else {
+          // Si viene desde enlace externo (changepass/:id)
+          Swal.fire({
+            icon: 'success',
+            title: 'Contraseña actualizada',
+            text: 'Tu contraseña se cambió correctamente. Ahora puedes iniciar sesión.',
+            confirmButtonColor: '#4F46E5'
+          }).then(() => {
+            localStorage.removeItem('validacion_id');
+            this.router.navigate(['/login']);
+          });
+        }
       },
       error: (err) => {
         Swal.close();
