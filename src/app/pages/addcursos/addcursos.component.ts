@@ -25,7 +25,8 @@ export class AddcursosComponent implements OnInit {
   docenteNombre: string = '';
   modoVista: 'mis' | 'todos' = 'mis';
   niveles: string[] = ['1 EGB', '2 EGB', '3 EGB', '4 EGB', '5 EGB', '6 EGB', '7 EGB', '8 EGB', '9 EGB', '10 EGB', '1 BGU', '2 BGU', '3 BGU'];
-  nombre: string[] = ['Pre-escolar', 'Primaria', 'Secundaria', 'Bachillerato'];
+  nombre: string[] = ['Pre-escolar', 'Primaria', 'Bachillerato'];
+  paralelos: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 
   constructor(
