@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { LoginService } from '../../services/server/login.service';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-
+import { HostListener } from '@angular/core';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { CursosService } from '../../services/server/cursos.service';
 import { finalize } from 'rxjs/operators';
@@ -24,9 +24,33 @@ export class AddcursosComponent implements OnInit {
   ready = false;
   docenteNombre: string = '';
   modoVista: 'mis' | 'todos' = 'mis';
-  niveles: string[] = ['1 EGB', '2 EGB', '3 EGB', '4 EGB', '5 EGB', '6 EGB', '7 EGB', '8 EGB', '9 EGB', '10 EGB', '1 BGU', '2 BGU', '3 BGU'];
-  nombre: string[] = ['Pre-escolar', 'Primaria', 'Bachillerato'];
+  niveles: string[] = ['Elemental', 'Medio', 'Preparatoria', 'Superior', 'Bachillerato'];
+  nombre: string[] = ['1 EGB', '2 EGB', '3 EGB', '4 EGB', '5 EGB', '6 EGB', '7 EGB', '8 EGB', '9 EGB', '10 EGB', '1 BGU', '2 BGU', '3 BGU'];
   paralelos: string[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+  dropdown: string | null = null;
+
+  toggleDropdown(campo: string) {
+    this.dropdown = this.dropdown === campo ? null : campo;
+  }
+
+  selectValue(campo: string, valor: string) {
+    this.cursoForm.patchValue({ [campo]: valor });
+    this.dropdown = null;
+  }
+
+  get docenteSeleccionado(): string {
+    const id = this.cursoForm?.value?.docente_id;
+    const d = this.docentes?.find(x => x._id === id);
+    return d ? `${d.apellidos} ${d.nombres}` : '';
+  }
+
+  @HostListener('document:click', ['$event'])
+  cerrarDropdowns(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.relative')) {
+      this.dropdown = null;
+    }
+  }
 
 
   constructor(
@@ -116,6 +140,7 @@ export class AddcursosComponent implements OnInit {
     });
     this.cargarCursos();
   }
+  
 
   onSubmit(): void {
     if (this.cursoForm.valid) {
